@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+console.log('App component loading with new layout...');
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>

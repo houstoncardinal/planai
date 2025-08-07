@@ -120,6 +120,8 @@ const mockCodeIssues = [
 ];
 
 const Index = () => {
+  console.log('Index component rendering...');
+  
   const [projects, setProjects] = useState(mockProjects);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
