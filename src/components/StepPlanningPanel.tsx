@@ -1,50 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppStore } from "@/stores/appStore";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, GripVertical, Check, X, ArrowRight, Lightbulb } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Target, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle2, 
+  BarChart3,
+  Filter,
+  Search,
+  Calendar,
+  ArrowUpDown,
+  Eye,
+  EyeOff
+} from "lucide-react";
+import { StepCard } from "@/components/StepCard";
+import { StepCreationWizard } from "@/components/StepCreationWizard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface StepPlanningPanelProps {
   projectId: string;
   steps: any[];
-  onStepsChange?: (steps: any[]) => void; // Optional for backward compatibility
+  onStepsChange?: (steps: any[]) => void;
 }
 
 export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) {
-  const [newStepTitle, setNewStepTitle] = useState("");
-  const [expandedStep, setExpandedStep] = useState<string | null>(null);
-  const { addStep, updateStep, toggleStepCompletion } = useAppStore();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+  const [sortBy, setSortBy] = useState("created");
+  const [viewMode, setViewMode] = useState("expanded");
+  const { addStep, updateStep, toggleStepCompletion, projects } = useAppStore();
   const { toast } = useToast();
 
-  const handleAddStep = () => {
-    if (!newStepTitle.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a step title.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    addStep(projectId, {
-      title: newStepTitle,
-      description: "",
-      completed: false,
-      notes: "",
-      learnings: [],
-      impact: []
-    });
-    
-    setNewStepTitle("");
-    
+  const project = projects.find(p => p.id === projectId);
+
+  const handleAddStep = (stepData: any) => {
+    addStep(projectId, stepData);
     toast({
-      title: "Step Added",
-      description: `"${newStepTitle}" has been added to your project.`,
+      title: "Step Created",
+      description: `"${stepData.title}" has been added to your project.`,
     });
   };
 
@@ -58,125 +59,238 @@ export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) 
     
     if (step) {
       toast({
-        title: step.completed ? "Step Reopened" : "Step Completed!",
+        title: step.completed ? "Step Reopened" : "Step Completed! 🎉",
         description: `"${step.title}" has been ${step.completed ? 'reopened' : 'marked as complete'}.`,
       });
     }
   };
 
-  const addLearning = (stepId: string, learning: string) => {
-    const step = steps.find(s => s.id === stepId);
-    if (step && learning.trim()) {
-      handleUpdateStep(stepId, { learnings: [...step.learnings, learning] });
-    }
-  };
+  // Filter and sort steps
+  const filteredSteps = steps
+    .filter(step => {
+      const matchesSearch = step.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (step.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = filterStatus === "all" || 
+                           (filterStatus === "completed" && step.completed) ||
+                           (filterStatus === "active" && !step.completed && step.status === "in_progress") ||
+                           (filterStatus === "pending" && !step.completed && step.status !== "in_progress");
+      const matchesPriority = filterPriority === "all" || step.priority === filterPriority;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "priority":
+          const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+          return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - 
+                 (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
+        case "created":
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        case "title":
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+
+  // Calculate statistics
+  const totalSteps = steps.length;
+  const completedSteps = steps.filter(s => s.completed).length;
+  const activeSteps = steps.filter(s => !s.completed && s.status === "in_progress").length;
+  const blockedSteps = steps.filter(s => s.status === "blocked").length;
+  const totalEstimatedHours = steps.reduce((sum, step) => sum + (parseInt(step.estimatedHours) || 0), 0);
+  const completedHours = steps
+    .filter(s => s.completed)
+    .reduce((sum, step) => sum + (parseInt(step.estimatedHours) || 0), 0);
+
+  const progressPercentage = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="space-y-6">
+      {/* Header with Stats */}
+      <Card className="bg-gradient-to-br from-card/95 via-card to-card/90 backdrop-blur-sm border-border/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ArrowRight className="h-5 w-5 text-primary" />
-            Step-by-Step Planning
-          </CardTitle>
-          <CardDescription>
-            Break down your project into manageable steps and track progress
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                  <Target className="h-5 w-5 text-primary" />
+                </div>
+                Project Planning
+              </CardTitle>
+              <p className="text-muted-foreground">
+                {project?.title} - Strategic step-by-step execution plan
+              </p>
+            </div>
+            <StepCreationWizard onAddStep={handleAddStep} projectTitle={project?.title} />
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Add new step */}
-            <div className="flex gap-2">
+        
+        <CardContent className="space-y-6">
+          {/* Progress Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Progress</p>
+                  <p className="text-xl font-semibold text-primary">{Math.round(progressPercentage)}%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-gradient-to-br from-success/10 to-success/5 rounded-lg border border-success/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Completed</p>
+                  <p className="text-xl font-semibold text-success">{completedSteps}/{totalSteps}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg border border-blue-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                  <p className="text-xl font-semibold text-blue-500">{activeSteps}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-lg border border-orange-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Est. Hours</p>
+                  <p className="text-xl font-semibold text-orange-500">{completedHours}/{totalEstimatedHours}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Overall Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-foreground">Project Progress</span>
+              <span className="text-muted-foreground">{completedSteps} of {totalSteps} steps completed</span>
+            </div>
+            <Progress value={progressPercentage} className="h-3" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Controls */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Add new step..."
-                value={newStepTitle}
-                onChange={(e) => setNewStepTitle(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddStep()}
-                className="flex-1"
+                placeholder="Search steps..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
               />
-              <Button onClick={handleAddStep} size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
 
-            {/* Steps list */}
-            <div className="space-y-3">
-              {steps.map((step, index) => (
-                <Card key={step.id} className={`transition-all ${step.completed ? 'bg-success/5 border-success/20' : ''}`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex items-center gap-2 mt-1">
-                        <GripVertical className="h-4 w-4 text-muted-foreground" />
-                        <Checkbox
-                          checked={step.completed}
-                          onCheckedChange={() => handleToggleCompletion(step.id)}
-                        />
-                      </div>
-                      
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className={`font-medium ${step.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                            {index + 1}. {step.title}
-                          </h4>
-                          <div className="flex items-center gap-2">
-                            {step.completed && (
-                              <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                                <Check className="mr-1 h-3 w-3" />
-                                Completed
-                              </Badge>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
-                            >
-                              {expandedStep === step.id ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {expandedStep === step.id && (
-                          <div className="space-y-3 pt-2 border-t border-border/50">
-                            <Textarea
-                              placeholder="Add description..."
-                              value={step.description}
-                              onChange={(e) => handleUpdateStep(step.id, { description: e.target.value })}
-                              className="min-h-[80px]"
-                            />
-                            
-                            <Textarea
-                              placeholder="Notes and approach..."
-                              value={step.notes}
-                              onChange={(e) => handleUpdateStep(step.id, { notes: e.target.value })}
-                              className="min-h-[60px]"
-                            />
-                            
-                            {step.learnings.length > 0 && (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                                  <Lightbulb className="h-4 w-4" />
-                                  Learnings
-                                </div>
-                                <div className="space-y-1">
-                                  {step.learnings.map((learning, idx) => (
-                                    <div key={idx} className="text-sm text-muted-foreground bg-accent/30 p-2 rounded">
-                                      {learning}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            {/* Filters */}
+            <div className="flex items-center gap-2">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-xl z-50">
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-xl z-50">
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-xl z-50">
+                  <SelectItem value="created">Date Created</SelectItem>
+                  <SelectItem value="priority">Priority</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode(viewMode === "expanded" ? "compact" : "expanded")}
+              >
+                {viewMode === "expanded" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Steps List */}
+      <div className="space-y-4">
+        {filteredSteps.length === 0 ? (
+          <Card className="border-dashed border-2 border-muted-foreground/25">
+            <CardContent className="flex items-center justify-center h-48 text-center">
+              <div className="space-y-3">
+                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto">
+                  <Target className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-foreground">No steps found</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {steps.length === 0 
+                      ? "Create your first step to start planning" 
+                      : "Try adjusting your search or filters"}
+                  </p>
+                </div>
+                {steps.length === 0 && (
+                  <StepCreationWizard onAddStep={handleAddStep} projectTitle={project?.title} />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4 animate-fade-in">
+            {filteredSteps.map((step, index) => (
+              <StepCard
+                key={step.id}
+                step={step}
+                index={index}
+                onUpdate={(updates) => handleUpdateStep(step.id, updates)}
+                onToggleCompletion={() => handleToggleCompletion(step.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
