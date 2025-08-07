@@ -180,28 +180,41 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-x-hidden w-full">
       <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-              App Planner
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Track ideas, plan development, and learn from your journey
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              {projects.filter(p => p.status === 'completed').length} Completed
-            </Badge>
-            <Button 
-              className="bg-gradient-to-r from-primary to-primary-glow text-white"
-              onClick={handleNewProject}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
+        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 md:p-8 shadow-sm">
+          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
+            {/* Title Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground">
+                  App Planner
+                </h1>
+              </div>
+              <p className="text-sm md:text-base text-muted-foreground font-medium pl-7">
+                Strategic development planning & execution tracking
+              </p>
+            </div>
+            
+            {/* Actions Section */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
+              {/* Stats Badge */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-background/80 border border-border/60 rounded-lg">
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {projects.filter(p => p.status === 'completed').length} Projects Completed
+                </span>
+              </div>
+              
+              {/* New Project Button */}
+              <Button 
+                onClick={handleNewProject}
+                className="h-11 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+                size="default"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                New Project
+              </Button>
+            </div>
           </div>
         </div>
 
