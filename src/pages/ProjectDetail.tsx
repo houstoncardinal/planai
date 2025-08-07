@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAppStore } from "@/stores/appStore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -129,11 +130,18 @@ const statusConfig = {
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [steps, setSteps] = useState(mockSteps[id as keyof typeof mockSteps] || []);
-  const [learnings, setLearnings] = useState([]);
-  const [codeIssues, setCodeIssues] = useState([]);
+  const { 
+    getProjectById, 
+    getStepsByProjectId, 
+    getLearningsByProjectId, 
+    getCodeIssuesByProjectId,
+    addLearning
+  } = useAppStore();
 
-  const project = projectsData[id as keyof typeof projectsData];
+  const project = getProjectById(id || '');
+  const steps = getStepsByProjectId(id || '');
+  const learnings = getLearningsByProjectId(id || '');
+  const codeIssues = getCodeIssuesByProjectId(id || '');
 
   useEffect(() => {
     if (!project) {
@@ -145,14 +153,12 @@ const ProjectDetail = () => {
     return null;
   }
 
-  const addLearning = (learning: any) => {
-    const newLearning = {
+  const handleAddLearning = (learning: any) => {
+    addLearning({
       ...learning,
-      id: Date.now().toString(),
-      date: 'Just now',
-      project: project.title
-    };
-    setLearnings([newLearning, ...learnings]);
+      project: project.title,
+      projectId: project.id
+    });
   };
 
   const status = statusConfig[project.status];
@@ -264,14 +270,14 @@ const ProjectDetail = () => {
           <StepPlanningPanel
             projectId={project.id}
             steps={steps}
-            onStepsChange={setSteps}
+            onStepsChange={() => {}} // Steps are managed by the store
           />
         </TabsContent>
 
         <TabsContent value="learnings">
           <LearningLog 
             learnings={learnings} 
-            onAddLearning={addLearning}
+            onAddLearning={handleAddLearning}
           />
         </TabsContent>
 

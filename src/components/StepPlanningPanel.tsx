@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAppStore } from "@/stores/appStore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,61 +7,67 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, GripVertical, Check, X, ArrowRight, Lightbulb } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-
-interface Step {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  notes: string;
-  learnings: string[];
-  impact: string[];
-}
+import { useToast } from "@/hooks/use-toast";
 
 interface StepPlanningPanelProps {
   projectId: string;
-  steps: Step[];
-  onStepsChange: (steps: Step[]) => void;
+  steps: any[];
+  onStepsChange?: (steps: any[]) => void; // Optional for backward compatibility
 }
 
-export function StepPlanningPanel({ projectId, steps, onStepsChange }: StepPlanningPanelProps) {
+export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) {
   const [newStepTitle, setNewStepTitle] = useState("");
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
+  const { addStep, updateStep, toggleStepCompletion } = useAppStore();
+  const { toast } = useToast();
 
-  const addStep = () => {
-    if (!newStepTitle.trim()) return;
+  const handleAddStep = () => {
+    if (!newStepTitle.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a step title.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const newStep: Step = {
-      id: Date.now().toString(),
+    addStep(projectId, {
       title: newStepTitle,
       description: "",
       completed: false,
       notes: "",
       learnings: [],
       impact: []
-    };
+    });
     
-    onStepsChange([...steps, newStep]);
     setNewStepTitle("");
+    
+    toast({
+      title: "Step Added",
+      description: `"${newStepTitle}" has been added to your project.`,
+    });
   };
 
-  const updateStep = (stepId: string, updates: Partial<Step>) => {
-    onStepsChange(steps.map(step => 
-      step.id === stepId ? { ...step, ...updates } : step
-    ));
+  const handleUpdateStep = (stepId: string, updates: any) => {
+    updateStep(projectId, stepId, updates);
   };
 
-  const toggleStepCompletion = (stepId: string) => {
+  const handleToggleCompletion = (stepId: string) => {
     const step = steps.find(s => s.id === stepId);
+    toggleStepCompletion(projectId, stepId);
+    
     if (step) {
-      updateStep(stepId, { completed: !step.completed });
+      toast({
+        title: step.completed ? "Step Reopened" : "Step Completed!",
+        description: `"${step.title}" has been ${step.completed ? 'reopened' : 'marked as complete'}.`,
+      });
     }
   };
 
   const addLearning = (stepId: string, learning: string) => {
     const step = steps.find(s => s.id === stepId);
     if (step && learning.trim()) {
-      updateStep(stepId, { learnings: [...step.learnings, learning] });
+      handleUpdateStep(stepId, { learnings: [...step.learnings, learning] });
     }
   };
 
@@ -84,10 +91,10 @@ export function StepPlanningPanel({ projectId, steps, onStepsChange }: StepPlann
                 placeholder="Add new step..."
                 value={newStepTitle}
                 onChange={(e) => setNewStepTitle(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addStep()}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddStep()}
                 className="flex-1"
               />
-              <Button onClick={addStep} size="sm">
+              <Button onClick={handleAddStep} size="sm">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -102,7 +109,7 @@ export function StepPlanningPanel({ projectId, steps, onStepsChange }: StepPlann
                         <GripVertical className="h-4 w-4 text-muted-foreground" />
                         <Checkbox
                           checked={step.completed}
-                          onCheckedChange={() => toggleStepCompletion(step.id)}
+                          onCheckedChange={() => handleToggleCompletion(step.id)}
                         />
                       </div>
                       
@@ -133,14 +140,14 @@ export function StepPlanningPanel({ projectId, steps, onStepsChange }: StepPlann
                             <Textarea
                               placeholder="Add description..."
                               value={step.description}
-                              onChange={(e) => updateStep(step.id, { description: e.target.value })}
+                              onChange={(e) => handleUpdateStep(step.id, { description: e.target.value })}
                               className="min-h-[80px]"
                             />
                             
                             <Textarea
                               placeholder="Notes and approach..."
                               value={step.notes}
-                              onChange={(e) => updateStep(step.id, { notes: e.target.value })}
+                              onChange={(e) => handleUpdateStep(step.id, { notes: e.target.value })}
                               className="min-h-[60px]"
                             />
                             

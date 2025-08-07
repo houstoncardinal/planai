@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppStore } from "@/stores/appStore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, MoreHorizontal, Calendar, Target, TrendingUp } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
+import { ProjectForm } from "@/components/ProjectForm";
 
 // Enhanced mock data
 const mockProjects = [
@@ -72,7 +74,7 @@ const mockProjects = [
 
 const Projects = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState(mockProjects);
+  const { projects } = useAppStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -127,49 +129,11 @@ const Projects = () => {
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-              <DialogDescription>
-                Start a new project and begin tracking your development journey.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <Input placeholder="Project title..." />
-              <Textarea placeholder="Project description..." className="min-h-[100px]" />
-              <div className="grid grid-cols-2 gap-4">
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="web">Web Development</SelectItem>
-                    <SelectItem value="mobile">Mobile Development</SelectItem>
-                    <SelectItem value="ai">AI/ML</SelectItem>
-                    <SelectItem value="desktop">Desktop App</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Input type="date" placeholder="Due date" />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setIsCreateDialogOpen(false)}>
-                Create Project
-              </Button>
-            </div>
+          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <ProjectForm 
+              onCancel={() => setIsCreateDialogOpen(false)}
+              onSuccess={() => setIsCreateDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
