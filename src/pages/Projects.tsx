@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ const mockProjects = [
 ];
 
 const Projects = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState(mockProjects);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -95,11 +97,16 @@ const Projects = () => {
   const categories = [...new Set(projects.map(p => p.category))];
 
   const handleViewProject = (id: string) => {
-    console.log('View project:', id);
+    navigate(`/projects/${id}`);
   };
 
   const handleEditProject = (id: string) => {
     console.log('Edit project:', id);
+    // Could open an edit modal or navigate to edit page
+  };
+
+  const handleCreateProject = () => {
+    setIsCreateDialogOpen(true);
   };
 
   return (

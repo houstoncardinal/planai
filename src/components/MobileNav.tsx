@@ -49,13 +49,13 @@ export function MobileNav() {
             <SheetContent side="right" className="w-64">
               <div className="flex flex-col h-full">
                 <div className="py-4">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                      <Code className="h-4 w-4 text-white" />
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg">
+                      <Code className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="font-semibold text-foreground">App Planner</h2>
-                      <p className="text-xs text-muted-foreground">Dev Growth Guide</p>
+                      <h2 className="text-lg font-bold text-foreground">DevTracker</h2>
+                      <p className="text-xs text-muted-foreground -mt-0.5">Project Growth Platform</p>
                     </div>
                   </div>
                   

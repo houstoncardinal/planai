@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +22,24 @@ const mockProjects = [
     dueDate: 'Dec 15, 2024',
     stepsCompleted: 8,
     totalSteps: 12,
-    lastUpdated: '2 hours ago'
+    lastUpdated: '2 hours ago',
+    category: 'Web Development',
+    priority: 'high',
+    technologies: ['React', 'Node.js', 'MongoDB', 'Stripe']
   },
   {
     id: '2',
     title: 'Mobile App MVP',
-    description: 'React Native app for task management',
+    description: 'React Native app for task management with offline support',
     progress: 30,
     status: 'planning' as const,
     dueDate: 'Jan 20, 2025',
     stepsCompleted: 3,
     totalSteps: 10,
-    lastUpdated: '1 day ago'
+    lastUpdated: '1 day ago',
+    category: 'Mobile Development',
+    priority: 'medium',
+    technologies: ['React Native', 'Firebase', 'Redux']
   },
   {
     id: '3',
@@ -43,7 +50,10 @@ const mockProjects = [
     dueDate: 'Nov 30, 2024',
     stepsCompleted: 6,
     totalSteps: 6,
-    lastUpdated: '1 week ago'
+    lastUpdated: '1 week ago',
+    category: 'Web Development',
+    priority: 'low',
+    technologies: ['React', 'Tailwind', 'Framer Motion']
   }
 ];
 
@@ -122,6 +132,7 @@ const mockCodeIssues = [
 const Index = () => {
   console.log('Index component rendering...');
   
+  const navigate = useNavigate();
   const [projects, setProjects] = useState(mockProjects);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -135,11 +146,15 @@ const Index = () => {
   );
 
   const handleViewProject = (id: string) => {
-    setSelectedProject(id);
+    navigate(`/projects/${id}`);
   };
 
   const handleEditProject = (id: string) => {
     console.log('Edit project:', id);
+  };
+
+  const handleNewProject = () => {
+    navigate('/projects');
   };
 
   const addLearning = (learning: any) => {
@@ -180,7 +195,10 @@ const Index = () => {
               <TrendingUp className="mr-1 h-3 w-3" />
               {projects.filter(p => p.status === 'completed').length} Completed
             </Badge>
-            <Button className="bg-gradient-to-r from-primary to-primary-glow text-white">
+            <Button 
+              className="bg-gradient-to-r from-primary to-primary-glow text-white"
+              onClick={handleNewProject}
+            >
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Button>
@@ -267,7 +285,10 @@ const Index = () => {
             ))}
             
             {/* Add New Project Card */}
-            <Card className="border-dashed border-2 border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group">
+            <Card 
+              className="border-dashed border-2 border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group"
+              onClick={handleNewProject}
+            >
               <CardContent className="flex items-center justify-center h-48">
                 <div className="text-center space-y-2">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
