@@ -99,8 +99,8 @@ const Learnings = () => {
   const allTags = [...new Set(learnings.flatMap(l => l.tags))];
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="w-full overflow-x-hidden">
+      <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">{/* Fixed container */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Learning Archive</h1>
@@ -277,6 +277,7 @@ const Learnings = () => {
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 };

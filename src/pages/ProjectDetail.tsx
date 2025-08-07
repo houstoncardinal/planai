@@ -164,8 +164,8 @@ const ProjectDetail = () => {
   const status = statusConfig[project.status];
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
+    <div className="w-full overflow-x-hidden">
+      <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">{/* Fixed container */}
       <div className="flex items-center gap-4">
         <Button 
           variant="ghost" 
@@ -289,6 +289,7 @@ const ProjectDetail = () => {
           />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

@@ -112,8 +112,8 @@ const Projects = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="w-full overflow-x-hidden">
+      <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">{/* Fixed container */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>
@@ -237,6 +237,7 @@ const Projects = () => {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };
