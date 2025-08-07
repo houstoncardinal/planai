@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StepPlanningPanel } from "@/components/StepPlanningPanel";
 import { LearningLog } from "@/components/LearningLog";
 import { CodeAnalysisPanel } from "@/components/CodeAnalysisPanel";
+import { AIAnalysisPanel } from "@/components/AIAnalysisPanel";
+import { RealTimeCollaboration } from "@/components/RealTimeCollaboration";
+import { EnhancedProjectMetrics } from "@/components/EnhancedProjectMetrics";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -260,8 +263,11 @@ const ProjectDetail = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="planning" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="planning">Planning & Steps</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="planning">Planning</TabsTrigger>
+          <TabsTrigger value="metrics">Metrics</TabsTrigger>
+          <TabsTrigger value="collaboration">Team</TabsTrigger>
+          <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
           <TabsTrigger value="learnings">Learnings</TabsTrigger>
           <TabsTrigger value="analysis">Code Quality</TabsTrigger>
         </TabsList>
@@ -271,6 +277,23 @@ const ProjectDetail = () => {
             projectId={project.id}
             steps={steps}
             onStepsChange={() => {}} // Steps are managed by the store
+          />
+        </TabsContent>
+
+        <TabsContent value="metrics">
+          <EnhancedProjectMetrics projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="collaboration">
+          <RealTimeCollaboration projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="ai-insights">
+          <AIAnalysisPanel 
+            projectId={project.id}
+            onInsightApplied={(insight) => {
+              console.log('Applied insight to project:', insight);
+            }}
           />
         </TabsContent>
 

@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeAnalysisPanel } from "@/components/CodeAnalysisPanel";
+import { AIAnalysisPanel } from "@/components/AIAnalysisPanel";
+import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { Progress } from "@/components/ui/progress";
-import { Code, FileText, GitBranch, AlertTriangle, TrendingUp, RefreshCw, CheckCircle } from "lucide-react";
+import { Code, FileText, GitBranch, AlertTriangle, TrendingUp, RefreshCw, CheckCircle, Brain, BarChart3 } from "lucide-react";
 
 // Enhanced mock code analysis data
 const mockCodeIssues = [
@@ -155,9 +157,11 @@ const Analysis = () => {
 
       {/* Main Analysis Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="issues">Issues</TabsTrigger>
+          <TabsTrigger value="issues">Code Issues</TabsTrigger>
+          <TabsTrigger value="ai-analysis">AI Analysis</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="metrics">Metrics</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
         </TabsList>
@@ -231,6 +235,18 @@ const Analysis = () => {
             onRefresh={refreshCodeAnalysis}
             onViewFile={viewFile}
           />
+        </TabsContent>
+
+        <TabsContent value="ai-analysis">
+          <AIAnalysisPanel 
+            onInsightApplied={(insight) => {
+              console.log('Applied AI insight:', insight);
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AdvancedAnalytics />
         </TabsContent>
         
         <TabsContent value="metrics">
