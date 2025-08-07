@@ -28,13 +28,16 @@ export function MobileNav() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-              <Code className="h-4 w-4 text-white" />
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg">
+              <Code className="h-5 w-5 text-white" />
             </div>
-            <h1 className="font-semibold text-foreground">App Planner</h1>
+            <div>
+              <h1 className="text-lg font-bold text-foreground">DevTracker</h1>
+              <p className="text-xs text-muted-foreground -mt-0.5">Project Growth Platform</p>
+            </div>
           </div>
           
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

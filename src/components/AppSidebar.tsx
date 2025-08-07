@@ -58,19 +58,19 @@ export function AppSidebar() {
         {/* Header */}
         <div className="p-4 border-b border-border/50">
           {!isCollapsed ? (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <Code className="h-4 w-4 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg">
+                <Code className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h2 className="font-semibold text-foreground">App Planner</h2>
-                <p className="text-xs text-muted-foreground">Dev Growth Guide</p>
+                <h2 className="text-lg font-bold text-foreground">DevTracker</h2>
+                <p className="text-xs text-muted-foreground -mt-0.5">Project Growth Platform</p>
               </div>
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <Code className="h-4 w-4 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg">
+                <Code className="h-5 w-5 text-white" />
               </div>
             </div>
           )}
