@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Settings as SettingsIcon, User, Bell, Shield, Palette } from "lucide-react";
+import { AISettingsPanel } from '@/components/AISettingsPanel';
 
 const Settings = () => {
   return (
@@ -14,7 +15,6 @@ const Settings = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -48,6 +48,8 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AISettingsPanel />
     </div>
   );
 };

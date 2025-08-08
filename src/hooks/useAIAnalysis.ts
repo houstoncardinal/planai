@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { runProviderAnalysis } from './ai/providers';
 import { useAppStore } from '@/stores/appStore';
 
 export interface AIAnalysisResult {
@@ -96,9 +97,18 @@ export function useAIAnalysis() {
         codeIssues: projectId ? codeIssues.filter(i => i.projectId === projectId) : codeIssues
       };
 
-      // Generate realistic AI-powered insights
+      // Try external provider first when configured, then fall back to local
+      if (settings.provider !== 'local' || settings.customEndpoint) {
+        try {
+          const providerResult = await runProviderAnalysis(settings, contextData);
+          setLastAnalysis(providerResult);
+          return providerResult;
+        } catch (e) {
+          console.warn('External provider analysis failed, falling back to local:', e);
+        }
+      }
+
       const analysisResult: AIAnalysisResult = generateAnalysisResult(contextData);
-      
       setLastAnalysis(analysisResult);
       return analysisResult;
     } catch (error) {
@@ -107,7 +117,7 @@ export function useAIAnalysis() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [projects, steps, learnings, codeIssues]);
+  }, [projects, steps, learnings, codeIssues, settings]);
 
   const updateSettings = useCallback((newSettings: Partial<AIIntegrationSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
