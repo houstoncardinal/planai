@@ -47,8 +47,6 @@ const Settings = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
-
       <AISettingsPanel />
     </div>
   );
