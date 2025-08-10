@@ -11,6 +11,9 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Learnings from "./pages/Learnings";
 import Analysis from "./pages/Analysis";
+import Goals from "./pages/Goals";
+import Insights from "./pages/Insights";
+import Ideas from "./pages/Ideas";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +43,9 @@ const App = () => (
                   <Route path="/projects/:id" element={<ProjectDetail />} />
                   <Route path="/learnings" element={<Learnings />} />
                   <Route path="/analysis" element={<Analysis />} />
+                  <Route path="/goals" element={<Goals />} />
+                  <Route path="/insights" element={<Insights />} />
+                  <Route path="/ideas" element={<Ideas />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
