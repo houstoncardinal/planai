@@ -60,7 +60,7 @@ export interface CodeIssue {
   id: string;
   file: string;
   lines: number;
-  type: 'length' | 'duplicate' | 'complexity';
+  type: 'length' | 'duplicate' | 'complexity' | 'security';
   severity: 'low' | 'medium' | 'high';
   description: string;
   suggestion: string;

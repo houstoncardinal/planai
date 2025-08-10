@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -101,28 +101,32 @@ const quickActions = [
     icon: Bot,
     color: "text-violet-500",
     bgColor: "bg-violet-100",
-    glow: "hover:shadow-violet-500/25"
+    glow: "hover:shadow-violet-500/25",
+    href: "/ai-assistant"
   },
   {
     title: "Code Review",
     icon: Code,
     color: "text-rose-500",
     bgColor: "bg-rose-100",
-    glow: "hover:shadow-rose-500/25"
+    glow: "hover:shadow-rose-500/25",
+    href: "/code-review"
   },
   {
     title: "Performance",
     icon: Zap,
     color: "text-amber-500",
     bgColor: "bg-amber-100",
-    glow: "hover:shadow-amber-500/25"
+    glow: "hover:shadow-amber-500/25",
+    href: "/performance"
   },
   {
     title: "Security",
     icon: Shield,
     color: "text-lime-500",
     bgColor: "bg-lime-100",
-    glow: "hover:shadow-lime-500/25"
+    glow: "hover:shadow-lime-500/25",
+    href: "/security"
   }
 ];
 
@@ -166,6 +170,7 @@ const projectCategories = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -227,6 +232,7 @@ export function AppSidebar() {
                     key={action.title}
                     variant="ghost"
                     className="h-16 flex-col gap-1 p-2 hover:scale-105 transition-all duration-300 group"
+                    onClick={() => navigate(action.href)}
                   >
                     <div className={`w-8 h-8 rounded-lg ${action.bgColor} flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${action.glow}`}>
                       <Icon className={`h-4 w-4 ${action.color} transition-all duration-300 group-hover:scale-110`} />
