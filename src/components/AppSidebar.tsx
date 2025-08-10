@@ -48,7 +48,9 @@ export function AppSidebar() {
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50";
+    isActive
+      ? "bg-gradient-to-r from-primary/15 to-transparent text-primary font-medium border-r-2 border-primary shadow-sm"
+      : "text-foreground hover:text-foreground hover:bg-muted/60 transition-colors hover-scale";
 
   const isCollapsed = state === "collapsed";
 

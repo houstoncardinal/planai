@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import Seo from "@/components/Seo";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface Goal {
   id: string;
@@ -19,10 +20,16 @@ interface Goal {
 export default function Goals() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
-  const [goals, setGoals] = useState<Goal[]>([
-    { id: "g1", title: "Ship MVP", targetDate: new Date(Date.now() + 86400000 * 7).toISOString(), progress: 40 },
-    { id: "g2", title: "Write docs", targetDate: new Date(Date.now() + 86400000 * 14).toISOString(), progress: 20 },
-  ]);
+  const [goals, setGoals] = useState<Goal[]>(() => {
+    try {
+      const raw = localStorage.getItem("dt_goals");
+      if (raw) return JSON.parse(raw) as Goal[];
+    } catch {}
+    return [
+      { id: "g1", title: "Ship MVP", targetDate: new Date(Date.now() + 86400000 * 7).toISOString(), progress: 40 },
+      { id: "g2", title: "Write docs", targetDate: new Date(Date.now() + 86400000 * 14).toISOString(), progress: 20 },
+    ];
+  });
 
   const stats = useMemo(() => {
     const total = goals.length;
@@ -32,14 +39,45 @@ export default function Goals() {
     return { total, avg, dueSoon, completed };
   }, [goals]);
 
+  const isAddDisabled = useMemo(() => {
+    if (!title.trim()) return true;
+    if (date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const d = new Date(date);
+      return d < today;
+    }
+    return false;
+  }, [title, date]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("dt_goals", JSON.stringify(goals));
+    } catch {}
+  }, [goals]);
+
   function addGoal() {
-    if (!title.trim()) return;
+    const t = title.trim();
+    if (!t) {
+      toast.error("Please enter a goal title");
+      return;
+    }
+    if (date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const d = new Date(date);
+      if (d < today) {
+        toast.error("Target date cannot be in the past");
+        return;
+      }
+    }
     setGoals((prev) => [
-      { id: crypto.randomUUID(), title: title.trim(), targetDate: date || undefined, progress: 0 },
+      { id: crypto.randomUUID(), title: t, targetDate: date || undefined, progress: 0 },
       ...prev,
     ]);
     setTitle("");
     setDate("");
+    toast.success("Goal added");
   }
 
   function updateProgress(id: string, value: number) {
@@ -47,7 +85,15 @@ export default function Goals() {
   }
 
   function removeGoal(id: string) {
+    const ok = window.confirm("Remove this goal?");
+    if (!ok) return;
     setGoals((prev) => prev.filter((g) => g.id !== id));
+    toast.success("Goal removed");
+  }
+
+  function completeGoal(id: string) {
+    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, progress: 100 } : g)));
+    toast.success("Goal marked complete");
   }
 
   return (
@@ -61,9 +107,9 @@ export default function Goals() {
         <p className="text-sm text-muted-foreground mt-1">Plan, track, and complete your project goals.</p>
       </header>
 
-      <main className="p-4 md:p-6 space-y-6">
+      <main className="p-4 md:p-6 space-y-6 animate-fade-in">
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+          <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="text-sm">Total Goals</CardTitle>
             </CardHeader>
@@ -71,7 +117,7 @@ export default function Goals() {
               <p className="text-2xl font-semibold text-foreground">{stats.total}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="text-sm">Average Progress</CardTitle>
             </CardHeader>
@@ -82,7 +128,7 @@ export default function Goals() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="text-sm">Due Soon (7d)</CardTitle>
             </CardHeader>
@@ -90,7 +136,7 @@ export default function Goals() {
               <p className="text-2xl font-semibold text-foreground">{stats.dueSoon}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="text-sm">Completed</CardTitle>
             </CardHeader>
@@ -114,14 +160,17 @@ export default function Goals() {
                     placeholder="e.g., Implement auth flow"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") addGoal();
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="goal-date">Target date</Label>
-                  <Input id="goal-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                  <Input id="goal-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} min={new Date().toISOString().slice(0,10)} />
                 </div>
                 <div className="flex items-end">
-                  <Button className="w-full" onClick={addGoal} aria-label="Add goal">
+                  <Button className="w-full hover-scale" onClick={addGoal} aria-label="Add goal" disabled={isAddDisabled}>
                     Add Goal
                   </Button>
                 </div>
@@ -130,7 +179,7 @@ export default function Goals() {
           </Card>
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
           {goals.map((g) => (
             <Card key={g.id} className="overflow-hidden">
               <CardHeader className="flex-row items-center justify-between gap-4">
@@ -147,9 +196,16 @@ export default function Goals() {
                     {g.targetDate ? `Target: ${format(new Date(g.targetDate), "PP")}` : "No target date"}
                   </p>
                 </div>
-                <Button variant="ghost" onClick={() => removeGoal(g.id)} aria-label="Remove goal">
-                  Remove
-                </Button>
+                <div className="flex items-center gap-2">
+                  {g.progress < 100 && (
+                    <Button variant="secondary" onClick={() => completeGoal(g.id)} aria-label="Mark complete" className="hover-scale">
+                      Complete
+                    </Button>
+                  )}
+                  <Button variant="ghost" onClick={() => removeGoal(g.id)} aria-label="Remove goal" className="hover-scale">
+                    Remove
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-3">
