@@ -17,18 +17,62 @@ interface Goal {
   progress: number; // 0-100
 }
 
+// Add validation utilities
+const isValidGoal = (goal: unknown): goal is Goal => {
+  return (
+    goal &&
+    typeof goal === 'object' &&
+    goal !== null &&
+    'id' in goal &&
+    'title' in goal &&
+    'progress' in goal &&
+    typeof (goal as Goal).id === 'string' &&
+    typeof (goal as Goal).title === 'string' &&
+    typeof (goal as Goal).progress === 'number' &&
+    (goal as Goal).title.trim().length > 0 &&
+    (goal as Goal).progress >= 0 &&
+    (goal as Goal).progress <= 100 &&
+    (!('targetDate' in goal) || typeof (goal as Goal).targetDate === 'string')
+  )
+}
+
+const validateGoalsData = (data: unknown): Goal[] => {
+  if (!Array.isArray(data)) return []
+  
+  return data.filter(isValidGoal).map(goal => ({
+    ...goal,
+    title: goal.title.trim(),
+    progress: Math.max(0, Math.min(100, goal.progress))
+  }))
+}
+
+const getDefaultGoals = (): Goal[] => [
+  { id: "g1", title: "Ship MVP", targetDate: new Date(Date.now() + 86400000 * 7).toISOString(), progress: 40 },
+  { id: "g2", title: "Write docs", targetDate: new Date(Date.now() + 86400000 * 14).toISOString(), progress: 20 },
+]
+
 export default function Goals() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [goals, setGoals] = useState<Goal[]>(() => {
     try {
       const raw = localStorage.getItem("dt_goals");
-      if (raw) return JSON.parse(raw) as Goal[];
-    } catch {}
-    return [
-      { id: "g1", title: "Ship MVP", targetDate: new Date(Date.now() + 86400000 * 7).toISOString(), progress: 40 },
-      { id: "g2", title: "Write docs", targetDate: new Date(Date.now() + 86400000 * 14).toISOString(), progress: 20 },
-    ];
+      if (!raw) return getDefaultGoals()
+      
+      const parsed = JSON.parse(raw)
+      const validated = validateGoalsData(parsed)
+      
+      // If validation failed, use defaults
+      if (validated.length === 0) {
+        console.warn('Invalid goals data found in localStorage, using defaults')
+        return getDefaultGoals()
+      }
+      
+      return validated
+    } catch (error) {
+      console.error('Error loading goals from localStorage:', error)
+      return getDefaultGoals()
+    }
   });
 
   const stats = useMemo(() => {
@@ -52,8 +96,12 @@ export default function Goals() {
 
   useEffect(() => {
     try {
-      localStorage.setItem("dt_goals", JSON.stringify(goals));
-    } catch {}
+      const serialized = JSON.stringify(goals)
+      localStorage.setItem("dt_goals", serialized)
+    } catch (error) {
+      console.error('Error saving goals to localStorage:', error)
+      // Could show a toast notification here
+    }
   }, [goals]);
 
   function addGoal() {

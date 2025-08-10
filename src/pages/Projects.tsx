@@ -103,8 +103,8 @@ const Projects = () => {
   };
 
   const handleEditProject = (id: string) => {
-    console.log('Edit project:', id);
-    // Could open an edit modal or navigate to edit page
+    // TODO: Implement edit functionality
+    navigate(`/projects/${id}/edit`);
   };
 
   const handleCreateProject = () => {

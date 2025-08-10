@@ -1,59 +1,94 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { ProjectCard } from "@/components/ProjectCard";
 import { StepPlanningPanel } from "@/components/StepPlanningPanel";
 import { LearningLog } from "@/components/LearningLog";
 import { CodeAnalysisPanel } from "@/components/CodeAnalysisPanel";
-import { Plus, Search, Target, TrendingUp, BookOpen, Code } from "lucide-react";
+import { HelpCenter, TutorialTooltip, useTutorial } from "@/components/TutorialSystem";
+import { 
+  Plus, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle, 
+  AlertTriangle, 
+  Target,
+  Sparkles,
+  Bot,
+  Code,
+  Users,
+  Calendar,
+  ArrowRight,
+  Lightbulb,
+  BookOpen,
+  Zap
+} from "lucide-react";
+import { useAppStore } from "@/stores/appStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Learning, Project, CodeIssue } from "@/types";
 
-// Mock data - in a real app, this would come from a database
-const mockProjects = [
+// Mock data for enhanced dashboard
+const mockProjects: Project[] = [
   {
-    id: '1',
-    title: 'E-commerce Platform',
-    description: 'Building a modern e-commerce solution with React and Node.js',
+    id: "1",
+    title: "E-commerce Platform",
+    description: "Modern e-commerce platform with React and Node.js",
+    category: "Web Development",
+    priority: "high",
+    dueDate: "2024-03-15",
+    technologies: ["React", "Node.js", "PostgreSQL", "Stripe"],
+    team: ["John Doe", "Jane Smith", "Mike Johnson"],
+    budget: "$25,000",
+    timeSpent: "120 hours",
+    estimatedCompletion: "8 weeks",
     progress: 65,
-    status: 'in-progress' as const,
-    dueDate: 'Dec 15, 2024',
+    status: "in-progress",
+    stepsCompleted: 13,
+    totalSteps: 20,
+    createdAt: "2024-01-15T10:00:00Z",
+    lastUpdated: "2024-02-20T14:30:00Z"
+  },
+  {
+    id: "2",
+    title: "Mobile Fitness App",
+    description: "Cross-platform fitness tracking application",
+    category: "Mobile Development",
+    priority: "medium",
+    dueDate: "2024-04-01",
+    technologies: ["React Native", "Firebase", "Expo"],
+    team: ["Sarah Wilson", "Alex Brown"],
+    budget: "$15,000",
+    timeSpent: "80 hours",
+    estimatedCompletion: "6 weeks",
+    progress: 40,
+    status: "planning",
     stepsCompleted: 8,
-    totalSteps: 12,
-    lastUpdated: '2 hours ago',
-    category: 'Web Development',
-    priority: 'high',
-    technologies: ['React', 'Node.js', 'MongoDB', 'Stripe']
+    totalSteps: 20,
+    createdAt: "2024-02-01T09:00:00Z",
+    lastUpdated: "2024-02-18T16:45:00Z"
   },
   {
-    id: '2',
-    title: 'Mobile App MVP',
-    description: 'React Native app for task management with offline support',
-    progress: 30,
-    status: 'planning' as const,
-    dueDate: 'Jan 20, 2025',
-    stepsCompleted: 3,
-    totalSteps: 10,
-    lastUpdated: '1 day ago',
-    category: 'Mobile Development',
-    priority: 'medium',
-    technologies: ['React Native', 'Firebase', 'Redux']
-  },
-  {
-    id: '3',
-    title: 'Portfolio Website',
-    description: 'Personal portfolio built with React and Tailwind CSS',
-    progress: 100,
-    status: 'completed' as const,
-    dueDate: 'Nov 30, 2024',
-    stepsCompleted: 6,
-    totalSteps: 6,
-    lastUpdated: '1 week ago',
-    category: 'Web Development',
-    priority: 'low',
-    technologies: ['React', 'Tailwind', 'Framer Motion']
+    id: "3",
+    title: "AI Chat Assistant",
+    description: "Intelligent chatbot with natural language processing",
+    category: "AI/ML",
+    priority: "high",
+    dueDate: "2024-03-30",
+    technologies: ["Python", "TensorFlow", "FastAPI", "OpenAI"],
+    team: ["David Chen", "Emily Davis", "Tom Wilson"],
+    budget: "$30,000",
+    timeSpent: "150 hours",
+    estimatedCompletion: "10 weeks",
+    progress: 85,
+    status: "review",
+    stepsCompleted: 17,
+    totalSteps: 20,
+    createdAt: "2024-01-10T11:00:00Z",
+    lastUpdated: "2024-02-19T10:20:00Z"
   }
 ];
 
@@ -87,94 +122,121 @@ const mockSteps = [
   }
 ];
 
-const mockLearnings = [
+const mockLearnings: Learning[] = [
   {
-    id: '1',
-    title: 'TypeScript generics mastery',
-    content: 'Finally understood how to use TypeScript generics effectively for reusable components. The key was starting simple and building up complexity.',
-    type: 'insight' as const,
-    date: '2 days ago',
-    tags: ['typescript', 'components'],
-    relatedStep: '1'
+    id: "1",
+    title: "React 18 Concurrent Features",
+    content: "Learned about React 18's concurrent features including automatic batching, transitions, and suspense for data fetching. These features significantly improve user experience by making updates feel more responsive.",
+    type: "success",
+    tags: ["React", "Frontend", "Performance"],
+    date: "2 days ago",
+    project: "E-commerce Platform",
+    projectId: "1"
   },
   {
-    id: '2',
-    title: 'Authentication flow complexity',
-    content: 'Underestimated the complexity of handling token refresh and logout scenarios. Need to plan auth state management more carefully.',
-    type: 'failure' as const,
-    date: '1 day ago',
-    tags: ['auth', 'state-management'],
-    relatedStep: '3'
+    id: "2",
+    title: "Database Optimization Techniques",
+    content: "Discovered several database optimization techniques including proper indexing, query optimization, and connection pooling. This helped reduce query times by 60% in our e-commerce platform.",
+    type: "insight",
+    tags: ["Database", "Performance", "PostgreSQL"],
+    date: "1 week ago",
+    project: "E-commerce Platform",
+    projectId: "1"
+  },
+  {
+    id: "3",
+    title: "Mobile App Performance Issues",
+    content: "Encountered performance issues with React Native animations. Learned that using native drivers and optimizing re-renders is crucial for smooth animations on mobile devices.",
+    type: "failure",
+    tags: ["React Native", "Mobile", "Performance"],
+    date: "3 days ago",
+    project: "Mobile Fitness App",
+    projectId: "2"
   }
 ];
 
-const mockCodeIssues = [
+const mockCodeIssues: CodeIssue[] = [
   {
-    id: '1',
-    file: 'src/components/UserDashboard.tsx',
+    id: "1",
+    file: "src/components/UserDashboard.tsx",
     lines: 285,
-    type: 'length' as const,
-    severity: 'medium' as const,
-    description: 'Component is getting large and handles multiple responsibilities',
-    suggestion: 'Split into smaller components: UserProfile, UserStats, and UserActions'
+    type: "length",
+    severity: "medium",
+    description: "Component is getting large and handles multiple responsibilities",
+    suggestion: "Split into smaller components: UserProfile, UserStats, and UserActions",
+    resolved: false
   },
   {
-    id: '2',
-    file: 'src/utils/validation.ts',
+    id: "2",
+    file: "src/utils/validation.ts",
     lines: 95,
-    type: 'duplicate' as const,
-    severity: 'low' as const,
-    description: 'Similar validation patterns repeated in multiple functions',
-    suggestion: 'Create a generic validation factory function to reduce duplication'
+    type: "duplicate",
+    severity: "low",
+    description: "Similar validation patterns repeated in multiple functions",
+    suggestion: "Create a generic validation factory function to reduce duplication",
+    resolved: false
+  },
+  {
+    id: "3",
+    file: "src/hooks/useAuth.ts",
+    lines: 150,
+    type: "complexity",
+    severity: "medium",
+    description: "Complex hook with multiple responsibilities and side effects",
+    suggestion: "Split into useAuthState and useAuthActions hooks for better separation of concerns",
+    resolved: false
   }
 ];
 
 const Index = () => {
-  console.log('Index component rendering...');
-  
-  const navigate = useNavigate();
-  const [projects, setProjects] = useState(mockProjects);
+  const { projects, steps, learnings, codeIssues, addProject, addLearning } = useAppStore();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [steps, setSteps] = useState(mockSteps);
-  const [learnings, setLearnings] = useState(mockLearnings);
-  const [codeIssues, setCodeIssues] = useState(mockCodeIssues);
+  const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+  const { startTutorial } = useTutorial();
 
-  const filteredProjects = projects.filter(project =>
-    project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Use mock data for demonstration
+  const allProjects = useMemo(() => [...projects, ...mockProjects], [projects]);
+  const allLearnings = useMemo(() => [...learnings, ...mockLearnings], [learnings]);
+  const allCodeIssues = useMemo(() => [...codeIssues, ...mockCodeIssues], [codeIssues]);
 
   const handleViewProject = (id: string) => {
     navigate(`/projects/${id}`);
   };
 
   const handleEditProject = (id: string) => {
-    console.log('Edit project:', id);
+    navigate(`/projects/${id}/edit`);
   };
 
   const handleNewProject = () => {
     navigate('/projects');
   };
 
-  const addLearning = (learning: any) => {
-    const newLearning = {
-      ...learning,
-      id: Date.now().toString(),
-      date: 'Just now'
-    };
-    setLearnings([newLearning, ...learnings]);
-  };
-
   const refreshCodeAnalysis = () => {
-    console.log('Refreshing code analysis...');
-    // In a real app, this would run actual code analysis
+    // TODO: Implement actual code analysis refresh
   };
 
   const viewFile = (file: string) => {
-    console.log('View file:', file);
-    // In a real app, this would open the file in an editor
+    // TODO: Implement file viewing functionality
   };
+
+
+
+  const dashboardStats = {
+    totalProjects: allProjects.length,
+    activeProjects: allProjects.filter(p => p.status === 'in-progress').length,
+    completedProjects: allProjects.filter(p => p.status === 'completed').length,
+    totalLearnings: allLearnings.length,
+    codeIssues: allCodeIssues.length,
+    averageProgress: Math.round(allProjects.reduce((acc, p) => acc + p.progress, 0) / allProjects.length)
+  };
+
+  const recentActivity = [
+    { id: "1", action: "Project Updated", project: "E-commerce Platform", time: "2 hours ago", icon: <TrendingUp className="h-4 w-4" /> },
+    { id: "2", action: "Learning Added", project: "Mobile Fitness App", time: "4 hours ago", icon: <BookOpen className="h-4 w-4" /> },
+    { id: "3", action: "Code Analysis", project: "AI Chat Assistant", time: "6 hours ago", icon: <Code className="h-4 w-4" /> },
+    { id: "4", action: "Goal Completed", project: "General", time: "1 day ago", icon: <CheckCircle className="h-4 w-4" /> }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-x-hidden w-full">
@@ -218,33 +280,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Search and Quick Stats */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search projects..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Target className="h-4 w-4" />
-              {projects.filter(p => p.status === 'in-progress').length} Active
-            </div>
-            <div className="flex items-center gap-1">
-              <BookOpen className="h-4 w-4" />
-              {learnings.length} Learnings
-            </div>
-            <div className="flex items-center gap-1">
-              <Code className="h-4 w-4" />
-              {codeIssues.length} Code Issues
-            </div>
-          </div>
-        </div>
+
 
         {/* Main Content */}
         {selectedProject ? (
@@ -268,8 +304,8 @@ const Index = () => {
               <TabsContent value="planning">
                 <StepPlanningPanel
                   projectId={selectedProject}
-                  steps={steps}
-                  onStepsChange={setSteps}
+                  steps={steps[selectedProject] || []}
+                  onStepsChange={() => {}}
                 />
               </TabsContent>
               
@@ -288,30 +324,37 @@ const Index = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onView={handleViewProject}
-                onEdit={handleEditProject}
-              />
+            {allProjects.map((project) => (
+              <TutorialTooltip 
+                key={project.id} 
+                content={`View details and manage ${project.title}`}
+              >
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onView={handleViewProject}
+                  onEdit={handleEditProject}
+                />
+              </TutorialTooltip>
             ))}
             
             {/* Add New Project Card */}
-            <Card 
-              className="border-dashed border-2 border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group"
-              onClick={handleNewProject}
-            >
-              <CardContent className="flex items-center justify-center h-48">
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                    <Plus className="h-6 w-6 text-primary" />
+            <TutorialTooltip content="Start planning your next project">
+              <Card 
+                className="border-dashed border-2 border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group"
+                onClick={handleNewProject}
+              >
+                <CardContent className="flex items-center justify-center h-48">
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                      <Plus className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-medium text-foreground">New Project</h3>
+                    <p className="text-sm text-muted-foreground">Start planning your next idea</p>
                   </div>
-                  <h3 className="font-medium text-foreground">New Project</h3>
-                  <p className="text-sm text-muted-foreground">Start planning your next idea</p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </TutorialTooltip>
           </div>
         )}
       </div>

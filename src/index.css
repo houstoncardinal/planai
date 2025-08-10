@@ -17,9 +17,9 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 5%;
 
-    --primary: 262 83% 58%;
+    --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 262 83% 70%;
+    --primary-glow: 0 0% 20%;
 
     --secondary: 240 5% 96%;
     --secondary-foreground: 240 6% 10%;
@@ -41,33 +41,107 @@ All colors MUST be HSL.
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 262 83% 58%;
+    --ring: 0 0% 0%;
+
+    /* Enhanced color palette */
+    --blue: 217 91% 60%;
+    --blue-foreground: 0 0% 100%;
+    --blue-glow: 217 91% 70%;
+
+    --purple: 262 83% 58%;
+    --purple-foreground: 0 0% 100%;
+    --purple-glow: 262 83% 70%;
+
+    --green: 142 76% 36%;
+    --green-foreground: 0 0% 100%;
+    --green-glow: 142 76% 50%;
+
+    --orange: 25 95% 53%;
+    --orange-foreground: 0 0% 100%;
+    --orange-glow: 25 95% 65%;
+
+    --pink: 330 81% 60%;
+    --pink-foreground: 0 0% 100%;
+    --pink-glow: 330 81% 70%;
+
+    --cyan: 187 85% 53%;
+    --cyan-foreground: 0 0% 100%;
+    --cyan-glow: 187 85% 65%;
+
+    --indigo: 239 84% 67%;
+    --indigo-foreground: 0 0% 100%;
+    --indigo-glow: 239 84% 75%;
+
+    --emerald: 160 84% 39%;
+    --emerald-foreground: 0 0% 100%;
+    --emerald-glow: 160 84% 50%;
+
+    --rose: 346 77% 50%;
+    --rose-foreground: 0 0% 100%;
+    --rose-glow: 346 77% 60%;
+
+    --violet: 271 81% 56%;
+    --violet-foreground: 0 0% 100%;
+    --violet-glow: 271 81% 65%;
+
+    --amber: 43 96% 56%;
+    --amber-foreground: 0 0% 100%;
+    --amber-glow: 43 96% 65%;
+
+    --lime: 82 76% 42%;
+    --lime-foreground: 0 0% 100%;
+    --lime-glow: 82 76% 55%;
 
     /* Custom gradients and effects */
-    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
+    --gradient-blue: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-purple: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%));
+    --gradient-green: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 50%));
+    --gradient-orange: linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 65%));
+    --gradient-pink: linear-gradient(135deg, hsl(330 81% 60%), hsl(330 81% 70%));
+    --gradient-cyan: linear-gradient(135deg, hsl(187 85% 53%), hsl(187 85% 65%));
+    --gradient-indigo: linear-gradient(135deg, hsl(239 84% 67%), hsl(239 84% 75%));
+    --gradient-emerald: linear-gradient(135deg, hsl(160 84% 39%), hsl(160 84% 50%));
+    --gradient-rose: linear-gradient(135deg, hsl(346 77% 50%), hsl(346 77% 60%));
+    --gradient-violet: linear-gradient(135deg, hsl(271 81% 56%), hsl(271 81% 65%));
+    --gradient-amber: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 96% 65%));
+    --gradient-lime: linear-gradient(135deg, hsl(82 76% 42%), hsl(82 76% 55%));
+
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(240 5% 98%));
-    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.15);
-    --shadow-card: 0 4px 24px -8px hsl(240 10% 5% / 0.1);
+    --gradient-card-hover: linear-gradient(145deg, hsl(0 0% 100%), hsl(240 5% 96%));
     
+    --shadow-glow: 0 0 40px hsl(0 0% 0% / 0.15);
+    --shadow-glow-blue: 0 0 40px hsl(217 91% 60% / 0.25);
+    --shadow-glow-purple: 0 0 40px hsl(262 83% 58% / 0.25);
+    --shadow-glow-green: 0 0 40px hsl(142 76% 36% / 0.25);
+    --shadow-glow-orange: 0 0 40px hsl(25 95% 53% / 0.25);
+    --shadow-glow-pink: 0 0 40px hsl(330 81% 60% / 0.25);
+    --shadow-glow-cyan: 0 0 40px hsl(187 85% 53% / 0.25);
+    --shadow-glow-indigo: 0 0 40px hsl(239 84% 67% / 0.25);
+    --shadow-glow-emerald: 0 0 40px hsl(160 84% 39% / 0.25);
+    --shadow-glow-rose: 0 0 40px hsl(346 77% 50% / 0.25);
+    --shadow-glow-violet: 0 0 40px hsl(271 81% 56% / 0.25);
+    --shadow-glow-amber: 0 0 40px hsl(43 96% 56% / 0.25);
+    --shadow-glow-lime: 0 0 40px hsl(82 76% 42% / 0.25);
+
+    --shadow-card: 0 4px 24px -8px hsl(240 10% 5% / 0.1);
+    --shadow-card-hover: 0 8px 32px -8px hsl(240 10% 5% / 0.15);
+    --shadow-card-elevated: 0 12px 40px -8px hsl(240 10% 5% / 0.2);
+
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -117,5 +191,664 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Enhanced Card Components */
+  .card-enhanced {
+    @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-sm;
+    @apply border border-border/50;
+    @apply shadow-lg;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1;
+    @apply hover:border-border/80;
+  }
+
+  .card-glow-blue {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-blue-500/25 hover:border-blue-500/30;
+    @apply hover:bg-gradient-to-br hover:from-blue-500/5 hover:to-blue-500/10;
+  }
+
+  .card-glow-purple {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-purple-500/25 hover:border-purple-500/30;
+    @apply hover:bg-gradient-to-br hover:from-purple-500/5 hover:to-purple-500/10;
+  }
+
+  .card-glow-green {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-green-500/25 hover:border-green-500/30;
+    @apply hover:bg-gradient-to-br hover:from-green-500/5 hover:to-green-500/10;
+  }
+
+  .card-glow-orange {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-orange-500/25 hover:border-orange-500/30;
+    @apply hover:bg-gradient-to-br hover:from-orange-500/5 hover:to-orange-500/10;
+  }
+
+  .card-glow-pink {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-pink-500/25 hover:border-pink-500/30;
+    @apply hover:bg-gradient-to-br hover:from-pink-500/5 hover:to-pink-500/10;
+  }
+
+  .card-glow-cyan {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-cyan-500/25 hover:border-cyan-500/30;
+    @apply hover:bg-gradient-to-br hover:from-cyan-500/5 hover:to-cyan-500/10;
+  }
+
+  .card-glow-indigo {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-indigo-500/25 hover:border-indigo-500/30;
+    @apply hover:bg-gradient-to-br hover:from-indigo-500/5 hover:to-indigo-500/10;
+  }
+
+  .card-glow-emerald {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-emerald-500/25 hover:border-emerald-500/30;
+    @apply hover:bg-gradient-to-br hover:from-emerald-500/5 hover:to-emerald-500/10;
+  }
+
+  .card-glow-rose {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-rose-500/25 hover:border-rose-500/30;
+    @apply hover:bg-gradient-to-br hover:from-rose-500/5 hover:to-rose-500/10;
+  }
+
+  .card-glow-violet {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-violet-500/25 hover:border-violet-500/30;
+    @apply hover:bg-gradient-to-br hover:from-violet-500/5 hover:to-violet-500/10;
+  }
+
+  .card-glow-amber {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-amber-500/25 hover:border-amber-500/30;
+    @apply hover:bg-gradient-to-br hover:from-amber-500/5 hover:to-amber-500/10;
+  }
+
+  .card-glow-lime {
+    @apply card-enhanced;
+    @apply hover:shadow-xl hover:shadow-lime-500/25 hover:border-lime-500/30;
+    @apply hover:bg-gradient-to-br hover:from-lime-500/5 hover:to-lime-500/10;
+  }
+
+  /* Enhanced Button Components */
+  .btn-gradient-blue {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600;
+    @apply hover:from-blue-600 hover:to-blue-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-blue-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-blue-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-purple {
+    @apply bg-gradient-to-r from-purple-500 to-purple-600;
+    @apply hover:from-purple-600 hover:to-purple-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-purple-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-purple-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-green {
+    @apply bg-gradient-to-r from-green-500 to-green-600;
+    @apply hover:from-green-600 hover:to-green-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-green-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-green-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-orange {
+    @apply bg-gradient-to-r from-orange-500 to-orange-600;
+    @apply hover:from-orange-600 hover:to-orange-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-orange-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-orange-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-pink {
+    @apply bg-gradient-to-r from-pink-500 to-pink-600;
+    @apply hover:from-pink-600 hover:to-pink-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-pink-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-pink-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-cyan {
+    @apply bg-gradient-to-r from-cyan-500 to-cyan-600;
+    @apply hover:from-cyan-600 hover:to-cyan-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-cyan-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-cyan-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-indigo {
+    @apply bg-gradient-to-r from-indigo-500 to-indigo-600;
+    @apply hover:from-indigo-600 hover:to-indigo-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-indigo-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-indigo-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-emerald {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600;
+    @apply hover:from-emerald-600 hover:to-emerald-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-emerald-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-emerald-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-rose {
+    @apply bg-gradient-to-r from-rose-500 to-rose-600;
+    @apply hover:from-rose-600 hover:to-rose-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-rose-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-rose-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-violet {
+    @apply bg-gradient-to-r from-violet-500 to-violet-600;
+    @apply hover:from-violet-600 hover:to-violet-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-violet-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-violet-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-amber {
+    @apply bg-gradient-to-r from-amber-500 to-amber-600;
+    @apply hover:from-amber-600 hover:to-amber-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-amber-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-amber-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  .btn-gradient-lime {
+    @apply bg-gradient-to-r from-lime-500 to-lime-600;
+    @apply hover:from-lime-600 hover:to-lime-700;
+    @apply text-white font-medium;
+    @apply shadow-lg shadow-lime-500/25;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-xl hover:shadow-lime-500/40;
+    @apply hover:scale-105 hover:-translate-y-0.5;
+    @apply active:scale-95;
+  }
+
+  /* Enhanced Badge Components */
+  .badge-glow-blue {
+    @apply bg-blue-100 text-blue-800 border-blue-200;
+    @apply shadow-sm shadow-blue-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-blue-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-purple {
+    @apply bg-purple-100 text-purple-800 border-purple-200;
+    @apply shadow-sm shadow-purple-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-purple-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-green {
+    @apply bg-green-100 text-green-800 border-green-200;
+    @apply shadow-sm shadow-green-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-green-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-orange {
+    @apply bg-orange-100 text-orange-800 border-orange-200;
+    @apply shadow-sm shadow-orange-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-orange-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-pink {
+    @apply bg-pink-100 text-pink-800 border-pink-200;
+    @apply shadow-sm shadow-pink-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-pink-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-cyan {
+    @apply bg-cyan-100 text-cyan-800 border-cyan-200;
+    @apply shadow-sm shadow-cyan-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-cyan-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-indigo {
+    @apply bg-indigo-100 text-indigo-800 border-indigo-200;
+    @apply shadow-sm shadow-indigo-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-indigo-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-emerald {
+    @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+    @apply shadow-sm shadow-emerald-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-emerald-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-rose {
+    @apply bg-rose-100 text-rose-800 border-rose-200;
+    @apply shadow-sm shadow-rose-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-rose-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-violet {
+    @apply bg-violet-100 text-violet-800 border-violet-200;
+    @apply shadow-sm shadow-violet-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-violet-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-amber {
+    @apply bg-amber-100 text-amber-800 border-amber-200;
+    @apply shadow-sm shadow-amber-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-amber-500/30;
+    @apply hover:scale-105;
+  }
+
+  .badge-glow-lime {
+    @apply bg-lime-100 text-lime-800 border-lime-200;
+    @apply shadow-sm shadow-lime-500/20;
+    @apply transition-all duration-300;
+    @apply hover:shadow-md hover:shadow-lime-500/30;
+    @apply hover:scale-105;
+  }
+
+  /* Navigation Enhancements */
+  .nav-item-enhanced {
+    @apply relative overflow-hidden;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:scale-105;
+  }
+
+  .nav-item-enhanced::before {
+    content: '';
+    @apply absolute inset-0;
+    @apply bg-gradient-to-r from-transparent via-white/10 to-transparent;
+    @apply transform -translate-x-full;
+    @apply transition-transform duration-500 ease-out;
+  }
+
+  .nav-item-enhanced:hover::before {
+    @apply translate-x-full;
+  }
+
+  /* Progress Bar Enhancements */
+  .progress-glow {
+    @apply relative overflow-hidden;
+    @apply bg-muted/50;
+    @apply rounded-full;
+  }
+
+  .progress-glow::after {
+    content: '';
+    @apply absolute inset-0;
+    @apply bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    @apply animate-pulse;
+  }
+
+  /* Icon Enhancements */
+  .icon-glow-blue {
+    @apply text-blue-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-blue-600;
+  }
+
+  .icon-glow-purple {
+    @apply text-purple-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-purple-600;
+  }
+
+  .icon-glow-green {
+    @apply text-green-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-green-600;
+  }
+
+  .icon-glow-orange {
+    @apply text-orange-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-orange-600;
+  }
+
+  .icon-glow-pink {
+    @apply text-pink-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-pink-600;
+  }
+
+  .icon-glow-cyan {
+    @apply text-cyan-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-cyan-600;
+  }
+
+  .icon-glow-indigo {
+    @apply text-indigo-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-indigo-600;
+  }
+
+  .icon-glow-emerald {
+    @apply text-emerald-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-emerald-600;
+  }
+
+  .icon-glow-rose {
+    @apply text-rose-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-rose-600;
+  }
+
+  .icon-glow-violet {
+    @apply text-violet-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-violet-600;
+  }
+
+  .icon-glow-amber {
+    @apply text-amber-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-amber-600;
+  }
+
+  .icon-glow-lime {
+    @apply text-lime-500;
+    @apply drop-shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:drop-shadow-lg hover:scale-110;
+    @apply hover:text-lime-600;
+  }
+
+  /* Animation Classes */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  /* Hover Effects */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:-translate-y-2 hover:shadow-xl;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-lg hover:shadow-current/25;
+  }
+
+  .hover-scale {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:scale-105;
+  }
+
+  .hover-rotate {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:rotate-3;
+  }
+
+  /* Background Patterns */
+  .bg-pattern-dots {
+    background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .bg-pattern-grid {
+    background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .bg-pattern-hex {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e5e7eb' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  /* Custom Animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: calc(200px + 100%) 0;
+    }
+  }
+
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+      box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+  }
+
+  /* Utility Classes */
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-purple {
+    @apply bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-green {
+    @apply bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-orange {
+    @apply bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-pink {
+    @apply bg-gradient-to-r from-pink-600 to-pink-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-cyan {
+    @apply bg-gradient-to-r from-cyan-600 to-cyan-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-indigo {
+    @apply bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-emerald {
+    @apply bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-rose {
+    @apply bg-gradient-to-r from-rose-600 to-rose-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-violet {
+    @apply bg-gradient-to-r from-violet-600 to-violet-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-amber {
+    @apply bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-lime {
+    @apply bg-gradient-to-r from-lime-600 to-lime-800 bg-clip-text text-transparent;
+  }
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md;
+    @apply border border-white/20;
+    @apply shadow-lg;
+  }
+
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md;
+    @apply border border-black/20;
+    @apply shadow-lg;
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+    @apply bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    background-size: 200px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Glow Effects */
+  .glow-blue {
+    @apply shadow-lg shadow-blue-500/25;
+    @apply hover:shadow-xl hover:shadow-blue-500/40;
+  }
+
+  .glow-purple {
+    @apply shadow-lg shadow-purple-500/25;
+    @apply hover:shadow-xl hover:shadow-purple-500/40;
+  }
+
+  .glow-green {
+    @apply shadow-lg shadow-green-500/25;
+    @apply hover:shadow-xl hover:shadow-green-500/40;
+  }
+
+  .glow-orange {
+    @apply shadow-lg shadow-orange-500/25;
+    @apply hover:shadow-xl hover:shadow-orange-500/40;
+  }
+
+  .glow-pink {
+    @apply shadow-lg shadow-pink-500/25;
+    @apply hover:shadow-xl hover:shadow-pink-500/40;
+  }
+
+  .glow-cyan {
+    @apply shadow-lg shadow-cyan-500/25;
+    @apply hover:shadow-xl hover:shadow-cyan-500/40;
+  }
+
+  .glow-indigo {
+    @apply shadow-lg shadow-indigo-500/25;
+    @apply hover:shadow-xl hover:shadow-indigo-500/40;
+  }
+
+  .glow-emerald {
+    @apply shadow-lg shadow-emerald-500/25;
+    @apply hover:shadow-xl hover:shadow-emerald-500/40;
+  }
+
+  .glow-rose {
+    @apply shadow-lg shadow-rose-500/25;
+    @apply hover:shadow-xl hover:shadow-rose-500/40;
+  }
+
+  .glow-violet {
+    @apply shadow-lg shadow-violet-500/25;
+    @apply hover:shadow-xl hover:shadow-violet-500/40;
+  }
+
+  .glow-amber {
+    @apply shadow-lg shadow-amber-500/25;
+    @apply hover:shadow-xl hover:shadow-amber-500/40;
+  }
+
+  .glow-lime {
+    @apply shadow-lg shadow-lime-500/25;
+    @apply hover:shadow-xl hover:shadow-lime-500/40;
   }
 }

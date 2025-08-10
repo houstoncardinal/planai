@@ -1,369 +1,523 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CodeAnalysisPanel } from "@/components/CodeAnalysisPanel";
-import { AIAnalysisPanel } from "@/components/AIAnalysisPanel";
-import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { Progress } from "@/components/ui/progress";
-import { Code, FileText, GitBranch, AlertTriangle, TrendingUp, RefreshCw, CheckCircle, Brain, BarChart3 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Code, 
+  GitBranch, 
+  AlertTriangle, 
+  CheckCircle, 
+  Clock, 
+  TrendingUp, 
+  Zap,
+  Bot,
+  Sparkles,
+  FileCode,
+  Shield,
+  Database,
+  Globe,
+  Smartphone,
+  Layers,
+  Target,
+  Brain
+} from "lucide-react";
+import { AICodeAnalyzer } from "@/components/AICodeAnalyzer";
+import { AIAssistant } from "@/components/AIAssistant";
+import { HelpCenter, TutorialTooltip } from "@/components/TutorialSystem";
 
-// Enhanced mock code analysis data
-const mockCodeIssues = [
+// Mock data for code metrics
+const codeMetrics = {
+  totalLines: 15420,
+  functions: 342,
+  classes: 28,
+  complexity: 156,
+  testCoverage: 78,
+  duplicatedCode: 12,
+  technicalDebt: 8,
+  securityIssues: 3,
+  performanceIssues: 7,
+  maintainability: 85
+};
+
+// Mock data for recent analysis
+const recentAnalysis = [
   {
-    id: '1',
-    file: 'src/components/UserDashboard.tsx',
-    lines: 285,
-    type: 'length' as const,
-    severity: 'medium' as const,
-    description: 'Component is getting large and handles multiple responsibilities',
-    suggestion: 'Split into smaller components: UserProfile, UserStats, and UserActions'
+    id: "1",
+    file: "src/components/App.tsx",
+    type: "performance",
+    severity: "medium",
+    message: "Consider using React.memo for expensive components",
+    timestamp: "2 hours ago"
   },
   {
-    id: '2',
-    file: 'src/utils/validation.ts',
-    lines: 95,
-    type: 'duplicate' as const,
-    severity: 'low' as const,
-    description: 'Similar validation patterns repeated in multiple functions',
-    suggestion: 'Create a generic validation factory function to reduce duplication'
+    id: "2",
+    file: "src/hooks/useData.ts",
+    type: "security",
+    severity: "high",
+    message: "Potential SQL injection vulnerability detected",
+    timestamp: "4 hours ago"
   },
   {
-    id: '3',
-    file: 'src/pages/ProductCatalog.tsx',
-    lines: 320,
-    type: 'length' as const,
-    severity: 'high' as const,
-    description: 'Large component with complex state management and multiple API calls',
-    suggestion: 'Extract custom hooks for data fetching and split into ProductGrid and ProductFilters'
-  },
-  {
-    id: '4',
-    file: 'src/hooks/useAuth.ts',
-    lines: 150,
-    type: 'complexity' as const,
-    severity: 'medium' as const,
-    description: 'Complex hook with multiple responsibilities and side effects',
-    suggestion: 'Split into useAuthState and useAuthActions hooks for better separation of concerns'
+    id: "3",
+    file: "src/utils/helpers.ts",
+    type: "quality",
+    severity: "low",
+    message: "Function could be simplified for better readability",
+    timestamp: "6 hours ago"
   }
 ];
 
-const codeMetrics = {
-  totalFiles: 156,
-  totalLines: 12450,
-  averageFileSize: 79,
-  duplicatedCode: 8.3,
-  testCoverage: 78,
-  technicalDebt: 2.4, // in hours
-  maintainabilityIndex: 85
-};
-
-const qualityTrends = [
-  { date: '2024-01-01', coverage: 65, debt: 3.2, maintainability: 78 },
-  { date: '2024-02-01', coverage: 70, debt: 2.8, maintainability: 82 },
-  { date: '2024-03-01', coverage: 78, debt: 2.4, maintainability: 85 },
+// Mock data for AI insights
+const aiInsights = [
+  {
+    id: "1",
+    category: "Performance",
+    title: "Bundle Size Optimization",
+    description: "Your bundle size has increased by 15% in the last week. Consider code splitting and lazy loading.",
+    impact: "high",
+    effort: "medium"
+  },
+  {
+    id: "2",
+    category: "Security",
+    title: "Authentication Enhancement",
+    description: "Implement JWT refresh tokens to improve security posture.",
+    impact: "high",
+    effort: "low"
+  },
+  {
+    id: "3",
+    category: "Code Quality",
+    title: "TypeScript Migration",
+    description: "Consider migrating JavaScript files to TypeScript for better type safety.",
+    impact: "medium",
+    effort: "high"
+  }
 ];
 
-const Analysis = () => {
-  const [codeIssues, setCodeIssues] = useState(mockCodeIssues);
+export default function Analysis() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const refreshCodeAnalysis = async () => {
-    setIsAnalyzing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      console.log('Code analysis refreshed');
-    }, 2000);
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case "high": return "text-red-600 bg-red-100";
+      case "medium": return "text-yellow-600 bg-yellow-100";
+      case "low": return "text-green-600 bg-green-100";
+      default: return "text-gray-600 bg-gray-100";
+    }
   };
 
-  const viewFile = (file: string) => {
-    console.log('View file:', file);
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "performance": return <Zap className="h-4 w-4" />;
+      case "security": return <Shield className="h-4 w-4" />;
+      case "quality": return <CheckCircle className="h-4 w-4" />;
+      default: return <AlertTriangle className="h-4 w-4" />;
+    }
   };
 
-  const highPriorityIssues = codeIssues.filter(issue => issue.severity === 'high');
-  const mediumPriorityIssues = codeIssues.filter(issue => issue.severity === 'medium');
-  const longFiles = codeIssues.filter(issue => issue.type === 'length' && issue.lines > 200);
+  const getImpactColor = (impact: string) => {
+    switch (impact) {
+      case "high": return "text-red-600";
+      case "medium": return "text-yellow-600";
+      case "low": return "text-green-600";
+      default: return "text-gray-600";
+    }
+  };
 
   return (
     <div className="w-full overflow-x-hidden">
-      <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">{/* Fixed container */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Code Analysis</h1>
-          <p className="text-muted-foreground mt-1">
-            Track code quality, identify refactoring opportunities, and monitor technical debt
-          </p>
+      <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Code Analysis</h1>
+            <p className="text-muted-foreground mt-1">
+              AI-powered code analysis, performance monitoring, and quality insights
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              <Bot className="h-3 w-3 mr-1" />
+              Claude AI Powered
+            </Badge>
+            <TutorialTooltip 
+              content="Get help with AI code analysis features and learn how to use them effectively"
+              featureId="ai-code-analyzer"
+            >
+              <HelpCenter />
+            </TutorialTooltip>
+          </div>
         </div>
-        
-        <Button 
-          onClick={refreshCodeAnalysis} 
-          disabled={isAnalyzing}
-          variant="outline"
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${isAnalyzing ? 'animate-spin' : ''}`} />
-          {isAnalyzing ? 'Analyzing...' : 'Refresh Analysis'}
-        </Button>
-      </div>
 
-      {/* Quality Score Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-muted-foreground">Maintainability</div>
-              <CheckCircle className="h-4 w-4 text-success" />
-            </div>
-            <div className="text-2xl font-bold text-success">{codeMetrics.maintainabilityIndex}</div>
-            <Progress value={codeMetrics.maintainabilityIndex} className="mt-2 h-2" />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-muted-foreground">Test Coverage</div>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold text-primary">{codeMetrics.testCoverage}%</div>
-            <Progress value={codeMetrics.testCoverage} className="mt-2 h-2" />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-muted-foreground">Technical Debt</div>
-              <AlertTriangle className="h-4 w-4 text-warning" />
-            </div>
-            <div className="text-2xl font-bold text-warning">{codeMetrics.technicalDebt}h</div>
-            <div className="text-xs text-muted-foreground mt-1">Estimated time to fix</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-muted-foreground">Duplicated Code</div>
-              <GitBranch className="h-4 w-4 text-destructive" />
-            </div>
-            <div className="text-2xl font-bold text-destructive">{codeMetrics.duplicatedCode}%</div>
-            <div className="text-xs text-muted-foreground mt-1">Of total codebase</div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Main Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="ai-analyzer" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              AI Code Analyzer
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              AI Insights
+            </TabsTrigger>
+            <TabsTrigger value="metrics" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Metrics
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Main Analysis Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="issues">Code Issues</TabsTrigger>
-          <TabsTrigger value="ai-analysis">AI Analysis</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="metrics">Metrics</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Quick Stats */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Code Health Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <TutorialTooltip content="Test coverage percentage across your codebase">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-muted-foreground">Test Coverage</div>
+                      <CheckCircle className="h-4 w-4 text-success" />
+                    </div>
+                    <div className="text-2xl font-bold text-success">{codeMetrics.testCoverage}%</div>
+                    <div className="text-xs text-muted-foreground mt-1">Target: 80%</div>
+                  </CardContent>
+                </Card>
+              </TutorialTooltip>
+
+              <TutorialTooltip content="Code maintainability score based on complexity and structure">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-muted-foreground">Maintainability</div>
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-primary">{codeMetrics.maintainability}/100</div>
+                    <div className="text-xs text-muted-foreground mt-1">Excellent</div>
+                  </CardContent>
+                </Card>
+              </TutorialTooltip>
+
+              <TutorialTooltip content="Number of security vulnerabilities detected in your code">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-muted-foreground">Security Issues</div>
+                      <Shield className="h-4 w-4 text-warning" />
+                    </div>
+                    <div className="text-2xl font-bold text-warning">{codeMetrics.securityIssues}</div>
+                    <div className="text-xs text-muted-foreground mt-1">Needs attention</div>
+                  </CardContent>
+                </Card>
+              </TutorialTooltip>
+
+              <TutorialTooltip content="Percentage of duplicated code in your codebase">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-muted-foreground">Duplicated Code</div>
+                      <GitBranch className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div className="text-2xl font-bold text-destructive">{codeMetrics.duplicatedCode}%</div>
+                    <div className="text-xs text-muted-foreground mt-1">Of total codebase</div>
+                  </CardContent>
+                </Card>
+              </TutorialTooltip>
+            </div>
+
+            {/* Recent Analysis Results */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Codebase Overview
+                  <AlertTriangle className="h-5 w-5 text-primary" />
+                  Recent Analysis Results
                 </CardTitle>
+                <CardDescription>
+                  Latest code analysis findings and recommendations
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-primary/10 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">{codeMetrics.totalFiles}</div>
-                    <div className="text-sm text-muted-foreground">Total Files</div>
-                  </div>
-                  <div className="text-center p-3 bg-primary/10 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">{codeMetrics.totalLines.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Lines of Code</div>
-                  </div>
-                </div>
-                <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <div className="text-lg font-bold text-foreground">{codeMetrics.averageFileSize}</div>
-                  <div className="text-sm text-muted-foreground">Average File Size (lines)</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Priority Issues */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-warning" />
-                  Priority Issues
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg">
-                  <div>
-                    <div className="font-medium text-destructive">High Priority</div>
-                    <div className="text-sm text-muted-foreground">Needs immediate attention</div>
-                  </div>
-                  <Badge variant="destructive">{highPriorityIssues.length}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-warning/10 rounded-lg">
-                  <div>
-                    <div className="font-medium text-warning">Medium Priority</div>
-                    <div className="text-sm text-muted-foreground">Should be addressed soon</div>
-                  </div>
-                  <Badge variant="secondary" className="bg-warning text-white">{mediumPriorityIssues.length}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
-                  <div>
-                    <div className="font-medium text-primary">Long Files</div>
-                    <div className="text-sm text-muted-foreground">Files over 200 lines</div>
-                  </div>
-                  <Badge variant="secondary" className="bg-primary text-white">{longFiles.length}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="issues">
-          <CodeAnalysisPanel
-            issues={codeIssues}
-            onRefresh={refreshCodeAnalysis}
-            onViewFile={viewFile}
-          />
-        </TabsContent>
-
-        <TabsContent value="ai-analysis">
-          <AIAnalysisPanel 
-            onInsightApplied={(insight) => {
-              console.log('Applied AI insight:', insight);
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <AdvancedAnalytics />
-        </TabsContent>
-        
-        <TabsContent value="metrics">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Code Complexity</CardTitle>
-                <CardDescription>Cyclomatic complexity and maintainability metrics</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Maintainability Index</span>
-                    <span className="font-medium">{codeMetrics.maintainabilityIndex}/100</span>
-                  </div>
-                  <Progress value={codeMetrics.maintainabilityIndex} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Test Coverage</span>
-                    <span className="font-medium">{codeMetrics.testCoverage}%</span>
-                  </div>
-                  <Progress value={codeMetrics.testCoverage} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Code Duplication</span>
-                    <span className="font-medium">{codeMetrics.duplicatedCode}%</span>
-                  </div>
-                  <Progress value={100 - codeMetrics.duplicatedCode} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Refactoring Recommendations</CardTitle>
-                <CardDescription>Suggested improvements for better code quality</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 border border-border rounded-lg">
-                  <div className="font-medium text-foreground">Extract Components</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    3 large components should be split into smaller, focused components
-                  </div>
-                </div>
-                <div className="p-3 border border-border rounded-lg">
-                  <div className="font-medium text-foreground">Remove Duplicates</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    2 files contain similar validation logic that could be shared
-                  </div>
-                </div>
-                <div className="p-3 border border-border rounded-lg">
-                  <div className="font-medium text-foreground">Add Tests</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    15 components lack adequate test coverage
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="trends">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Quality Trends
-              </CardTitle>
-              <CardDescription>Track your code quality improvements over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <CardContent>
                 <div className="space-y-4">
-                  <h4 className="font-medium text-foreground">Test Coverage</h4>
-                  {qualityTrends.map((trend, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{new Date(trend.date).toLocaleDateString()}</span>
+                  {recentAnalysis.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                          {getTypeIcon(item.type)}
+                        </div>
+                        <div>
+                          <div className="font-medium text-foreground">{item.file}</div>
+                          <div className="text-sm text-muted-foreground">{item.message}</div>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <Progress value={trend.coverage} className="w-16 h-2" />
-                        <span className="text-sm font-medium">{trend.coverage}%</span>
+                        <Badge className={getSeverityColor(item.severity)}>
+                          {item.severity}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{item.timestamp}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-medium text-foreground">Technical Debt</h4>
-                  {qualityTrends.map((trend, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{new Date(trend.date).toLocaleDateString()}</span>
-                      <span className="text-sm font-medium">{trend.debt}h</span>
-                    </div>
-                  ))}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  Quick Actions
+                </CardTitle>
+                <CardDescription>
+                  Common analysis tasks and tools
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <TutorialTooltip content="Run a comprehensive analysis of your entire codebase">
+                    <Button variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <FileCode className="h-6 w-6 text-primary" />
+                      <span>Run Full Analysis</span>
+                    </Button>
+                  </TutorialTooltip>
+                  <TutorialTooltip content="Scan your code for security vulnerabilities">
+                    <Button variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Shield className="h-6 w-6 text-primary" />
+                      <span>Security Scan</span>
+                    </Button>
+                  </TutorialTooltip>
+                  <TutorialTooltip content="Check your code for performance bottlenecks">
+                    <Button variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <TrendingUp className="h-6 w-6 text-primary" />
+                      <span>Performance Check</span>
+                    </Button>
+                  </TutorialTooltip>
                 </div>
-                
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="ai-analyzer" className="space-y-6">
+            <AICodeAnalyzer />
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            {/* AI Insights Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-primary" />
+                  AI-Generated Insights
+                </CardTitle>
+                <CardDescription>
+                  Intelligent recommendations based on your codebase analysis
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
-                  <h4 className="font-medium text-foreground">Maintainability</h4>
-                  {qualityTrends.map((trend, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{new Date(trend.date).toLocaleDateString()}</span>
-                      <div className="flex items-center gap-2">
-                        <Progress value={trend.maintainability} className="w-16 h-2" />
-                        <span className="text-sm font-medium">{trend.maintainability}</span>
+                  {aiInsights.map((insight) => (
+                    <div key={insight.id} className="p-4 border rounded-lg">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{insight.category}</Badge>
+                          <h4 className="font-semibold text-foreground">{insight.title}</h4>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getImpactColor(insight.impact)} bg-opacity-10`}>
+                            Impact: {insight.impact}
+                          </Badge>
+                          <Badge variant="secondary">
+                            Effort: {insight.effort}
+                          </Badge>
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground mb-3">{insight.description}</p>
+                      <div className="flex gap-2">
+                        <Button size="sm">View Details</Button>
+                        <Button size="sm" variant="outline">Dismiss</Button>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Technology Stack Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="h-5 w-5 text-primary" />
+                  Technology Stack Analysis
+                </CardTitle>
+                <CardDescription>
+                  AI analysis of your technology choices and recommendations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Globe className="h-4 w-4 text-blue-500" />
+                      <span className="font-medium">Frontend</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      React 18, TypeScript, Tailwind CSS
+                    </div>
+                    <Badge className="mt-2 bg-green-100 text-green-800">Excellent Choice</Badge>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Database className="h-4 w-4 text-green-500" />
+                      <span className="font-medium">Database</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      PostgreSQL, Prisma ORM
+                    </div>
+                    <Badge className="mt-2 bg-green-100 text-green-800">Solid Choice</Badge>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Smartphone className="h-4 w-4 text-purple-500" />
+                      <span className="font-medium">Mobile</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      React Native, Expo
+                    </div>
+                    <Badge className="mt-2 bg-yellow-100 text-yellow-800">Consider Native</Badge>
+                  </div>
+                  
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-4 w-4 text-red-500" />
+                      <span className="font-medium">Security</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      JWT, bcrypt, CORS
+                    </div>
+                    <Badge className="mt-2 bg-red-100 text-red-800">Needs Review</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="metrics" className="space-y-6">
+            {/* Detailed Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Code className="h-5 w-5 text-primary" />
+                    Code Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Total Lines of Code</span>
+                      <span className="font-medium">{codeMetrics.totalLines.toLocaleString()}</span>
+                    </div>
+                    <Progress value={75} className="h-2" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Functions</span>
+                      <span className="font-medium">{codeMetrics.functions}</span>
+                    </div>
+                    <Progress value={60} className="h-2" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Classes</span>
+                      <span className="font-medium">{codeMetrics.classes}</span>
+                    </div>
+                    <Progress value={40} className="h-2" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Cyclomatic Complexity</span>
+                      <span className="font-medium">{codeMetrics.complexity}</span>
+                    </div>
+                    <Progress value={85} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Quality Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Test Coverage</span>
+                      <span className="font-medium">{codeMetrics.testCoverage}%</span>
+                    </div>
+                    <Progress value={codeMetrics.testCoverage} className="h-2" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Maintainability Index</span>
+                      <span className="font-medium">{codeMetrics.maintainability}/100</span>
+                    </div>
+                    <Progress value={codeMetrics.maintainability} className="h-2" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Technical Debt</span>
+                      <span className="font-medium">{codeMetrics.technicalDebt} days</span>
+                    </div>
+                    <Progress value={20} className="h-2" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Duplicated Code</span>
+                      <span className="font-medium">{codeMetrics.duplicatedCode}%</span>
+                    </div>
+                    <Progress value={codeMetrics.duplicatedCode} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Performance Trends */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Performance Trends
+                </CardTitle>
+                <CardDescription>
+                  Historical performance metrics and trends
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center text-muted-foreground">
+                  Performance charts and trends will be displayed here
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
+      
+      {/* AI Assistant */}
+      <AIAssistant />
     </div>
   );
-};
-
-export default Analysis;
+}

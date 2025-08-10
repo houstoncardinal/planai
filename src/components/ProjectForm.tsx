@@ -6,14 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, X, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, X, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { validateProjectData, sanitizeString, type ProjectInput } from "@/lib/validation";
 
 interface ProjectFormProps {
   onCancel: () => void;
   onSuccess: () => void;
+}
+
+interface FormData {
+  title: string;
+  description: string;
+  category: string;
+  priority: 'low' | 'medium' | 'high';
+  dueDate: string;
+  technologies: string[];
+  team: string[];
+  budget: string;
+  timeSpent: string;
+  estimatedCompletion: string;
 }
 
 export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
@@ -21,68 +35,63 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
   const { addProject } = useAppStore();
   const { toast } = useToast();
   
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    priority: 'medium' as 'low' | 'medium' | 'high',
-    dueDate: '',
-    budget: '',
-    estimatedCompletion: '',
-    technologies: [] as string[],
-    team: ['You']
+  const [newTech, setNewTech] = useState("");
+  const [newTeamMember, setNewTeamMember] = useState("");
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    description: "",
+    category: "",
+    priority: "medium",
+    dueDate: "",
+    technologies: [],
+    team: ["You"],
+    budget: "",
+    timeSpent: "",
+    estimatedCompletion: ""
   });
-  
-  const [newTech, setNewTech] = useState('');
-  const [newTeamMember, setNewTeamMember] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a project title.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!formData.description.trim()) {
-      toast({
-        title: "Description Required", 
-        description: "Please enter a project description.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!formData.category) {
-      toast({
-        title: "Category Required",
-        description: "Please select a project category.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      const newProject = {
+      // Sanitize and validate input data
+      const sanitizedData = {
         ...formData,
-        status: 'planning' as const,
-        timeSpent: '0 hours',
-        progress: 0,
-        stepsCompleted: 0,
-        totalSteps: 0
+        title: sanitizeString(formData.title),
+        description: sanitizeString(formData.description),
+        technologies: formData.technologies.map(sanitizeString),
+        team: formData.team.map(sanitizeString),
+        budget: sanitizeString(formData.budget),
+        timeSpent: sanitizeString(formData.timeSpent),
+        estimatedCompletion: sanitizeString(formData.estimatedCompletion)
       };
 
-      addProject(newProject);
+      // Validate the data
+      const validatedData = validateProjectData(sanitizedData);
+      
+      // Add the project with required properties
+      addProject({
+        title: validatedData.title,
+        description: validatedData.description,
+        category: validatedData.category,
+        priority: validatedData.priority,
+        dueDate: validatedData.dueDate || '',
+        technologies: validatedData.technologies,
+        team: validatedData.team,
+        budget: validatedData.budget || '',
+        timeSpent: validatedData.timeSpent || '',
+        estimatedCompletion: validatedData.estimatedCompletion || '',
+        progress: 0,
+        status: 'planning',
+        stepsCompleted: 0,
+        totalSteps: 0
+      });
       
       toast({
-        title: "Project Created!",
-        description: `${formData.title} has been added to your projects.`,
+        title: "Success",
+        description: "Project created successfully!",
       });
-
+      
       onSuccess();
       
       // Navigate to the new project after a brief delay
@@ -91,19 +100,21 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
       }, 500);
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create project';
       toast({
         title: "Error",
-        description: "Failed to create project. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
   };
 
   const addTechnology = () => {
-    if (newTech.trim() && !formData.technologies.includes(newTech.trim())) {
+    const sanitizedTech = sanitizeString(newTech);
+    if (sanitizedTech && !formData.technologies.includes(sanitizedTech)) {
       setFormData(prev => ({
         ...prev,
-        technologies: [...prev.technologies, newTech.trim()]
+        technologies: [...prev.technologies, sanitizedTech]
       }));
       setNewTech('');
     }
@@ -117,10 +128,11 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
   };
 
   const addTeamMember = () => {
-    if (newTeamMember.trim() && !formData.team.includes(newTeamMember.trim())) {
+    const sanitizedMember = sanitizeString(newTeamMember);
+    if (sanitizedMember && !formData.team.includes(sanitizedMember)) {
       setFormData(prev => ({
         ...prev,
-        team: [...prev.team, newTeamMember.trim()]
+        team: [...prev.team, sanitizedMember]
       }));
       setNewTeamMember('');
     }

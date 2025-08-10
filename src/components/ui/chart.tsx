@@ -70,32 +70,42 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     ([_, config]) => config.theme || config.color
   )
 
+  // Use a ref to apply styles safely
+  const styleRef = React.useRef<HTMLStyleElement>(null)
+
+  React.useEffect(() => {
+    if (!colorConfig.length || !styleRef.current) {
+      return;
+    }
+
+    // Create CSS custom properties safely without innerHTML
+    const cssVariables = Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const variables = colorConfig
+          .map(([key, itemConfig]) => {
+            const color =
+              itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+              itemConfig.color
+            return color ? `--color-${key}: ${color};` : null
+          })
+          .filter(Boolean)
+          .join('\n')
+        
+        return variables ? `${prefix} [data-chart=${id}] {\n${variables}\n}` : ''
+      })
+      .filter(Boolean)
+      .join('\n')
+
+    if (cssVariables) {
+      styleRef.current.textContent = cssVariables
+    }
+  }, [id, colorConfig])
+
   if (!colorConfig.length) {
-    return null
+    return <style ref={styleRef} />
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
+  return <style ref={styleRef} />
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
@@ -361,3 +371,4 @@ export {
   ChartLegendContent,
   ChartStyle,
 }
+

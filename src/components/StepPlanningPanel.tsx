@@ -23,11 +23,12 @@ import { StepCard } from "@/components/StepCard";
 import { StepCreationWizard } from "@/components/StepCreationWizard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import type { Step, StepFormData } from "@/types";
 
 interface StepPlanningPanelProps {
   projectId: string;
-  steps: any[];
-  onStepsChange?: (steps: any[]) => void;
+  steps: Step[];
+  onStepsChange?: (steps: Step[]) => void;
 }
 
 export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) {
@@ -41,7 +42,7 @@ export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) 
 
   const project = projects.find(p => p.id === projectId);
 
-  const handleAddStep = (stepData: any) => {
+  const handleAddStep = (stepData: StepFormData) => {
     addStep(projectId, stepData);
     toast({
       title: "Step Created",
@@ -49,7 +50,7 @@ export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) 
     });
   };
 
-  const handleUpdateStep = (stepId: string, updates: any) => {
+  const handleUpdateStep = (stepId: string, updates: Partial<Step>) => {
     updateStep(projectId, stepId, updates);
   };
 

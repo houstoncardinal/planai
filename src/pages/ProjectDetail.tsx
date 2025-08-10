@@ -157,11 +157,20 @@ const ProjectDetail = () => {
   }
 
   const handleAddLearning = (learning: any) => {
-    addLearning({
-      ...learning,
-      project: project.title,
-      projectId: project.id
-    });
+    // TODO: Implement learning addition
+    // This would typically save to the backend
+  };
+
+  const refreshCodeAnalysis = () => {
+    // TODO: Implement code analysis refresh
+  };
+
+  const viewFile = (file: string) => {
+    // TODO: Implement file viewing
+  };
+
+  const applyInsight = (insight: any) => {
+    // TODO: Implement insight application
   };
 
   const status = statusConfig[project.status];
@@ -292,7 +301,7 @@ const ProjectDetail = () => {
           <AIAnalysisPanel 
             projectId={project.id}
             onInsightApplied={(insight) => {
-              console.log('Applied insight to project:', insight);
+              // console.log('Applied insight to project:', insight);
             }}
           />
         </TabsContent>
@@ -307,8 +316,8 @@ const ProjectDetail = () => {
         <TabsContent value="analysis">
           <CodeAnalysisPanel
             issues={codeIssues}
-            onRefresh={() => console.log('Refreshing analysis for', project.title)}
-            onViewFile={(file) => console.log('Viewing file:', file)}
+            onRefresh={refreshCodeAnalysis}
+            onViewFile={viewFile}
           />
         </TabsContent>
       </Tabs>
