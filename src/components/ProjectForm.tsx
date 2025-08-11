@@ -8,7 +8,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Calendar } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Plus, 
+  X, 
+  Calendar, 
+  Sparkles, 
+  Target, 
+  Users, 
+  Code, 
+  DollarSign, 
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Lightbulb,
+  Zap,
+  Globe,
+  Smartphone,
+  Brain,
+  Monitor,
+  Server,
+  Database,
+  GamepadIcon,
+  BarChart3
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateProjectData, sanitizeString, type ProjectInput } from "@/lib/validation";
 
@@ -30,6 +53,23 @@ interface FormData {
   estimatedCompletion: string;
 }
 
+const categoryIcons = {
+  'Web Development': Globe,
+  'Mobile Development': Smartphone,
+  'AI/ML': Brain,
+  'Desktop App': Monitor,
+  'API/Backend': Server,
+  'DevOps': Zap,
+  'Data Science': BarChart3,
+  'Game Development': GamepadIcon,
+};
+
+const priorityColors = {
+  low: 'bg-green-100 text-green-700 border-green-200',
+  medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  high: 'bg-red-100 text-red-700 border-red-200',
+};
+
 export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
   const navigate = useNavigate();
   const { addProject } = useAppStore();
@@ -37,6 +77,7 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
   
   const [newTech, setNewTech] = useState("");
   const [newTeamMember, setNewTeamMember] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -49,6 +90,9 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
     timeSpent: "",
     estimatedCompletion: ""
   });
+
+  const totalSteps = 3;
+  const progress = (currentStep / totalSteps) * 100;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,8 +132,8 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
       });
       
       toast({
-        title: "Success",
-        description: "Project created successfully!",
+        title: "🎉 Project Created!",
+        description: "Your new project has been successfully created and is ready to go!",
       });
       
       onSuccess();
@@ -102,7 +146,7 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create project';
       toast({
-        title: "Error",
+        title: "❌ Error",
         description: errorMessage,
         variant: "destructive"
       });
@@ -147,194 +191,303 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
     }
   };
 
-  return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create New Project</CardTitle>
-        <CardDescription>
-          Start a new project and begin tracking your development journey.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Project Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter project title..."
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Web Development">Web Development</SelectItem>
-                  <SelectItem value="Mobile Development">Mobile Development</SelectItem>
-                  <SelectItem value="AI/ML">AI/ML</SelectItem>
-                  <SelectItem value="Desktop App">Desktop App</SelectItem>
-                  <SelectItem value="API/Backend">API/Backend</SelectItem>
-                  <SelectItem value="DevOps">DevOps</SelectItem>
-                  <SelectItem value="Data Science">Data Science</SelectItem>
-                  <SelectItem value="Game Development">Game Development</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe your project goals and features..."
-              className="min-h-[100px]"
-              required
-            />
-          </div>
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value: 'low' | 'medium' | 'high') => 
-                  setFormData(prev => ({ ...prev, priority: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low Priority</SelectItem>
-                  <SelectItem value="medium">Medium Priority</SelectItem>
-                  <SelectItem value="high">High Priority</SelectItem>
-                </SelectContent>
-              </Select>
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center">
+                <Lightbulb className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold">Project Basics</h3>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
-              <div className="relative">
+
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="title" className="text-sm font-medium">Project Title *</Label>
                 <Input
-                  id="dueDate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter project title..."
+                  className="h-10"
+                  required
                 />
-                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="description" className="text-sm font-medium">Description *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Brief description of your project..."
+                  className="min-h-[80px] resize-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="category" className="text-sm font-medium">Category *</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  required
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Choose category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(categoryIcons).map(([category, Icon]) => (
+                      <SelectItem key={category} value={category}>
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          {category}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-4">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-xl flex items-center justify-center">
+                <Target className="h-6 w-6 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold">Project Details</h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="priority" className="text-sm font-medium">Priority</Label>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value: 'low' | 'medium' | 'high') => 
+                    setFormData(prev => ({ ...prev, priority: value }))
+                  }
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="dueDate" className="text-sm font-medium">Due Date</Label>
+                <div className="relative">
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                    className="h-10"
+                  />
+                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="budget" className="text-sm font-medium">Budget</Label>
+                <div className="relative">
+                  <Input
+                    id="budget"
+                    value={formData.budget}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
+                    placeholder="$10,000"
+                    className="h-10 pl-8"
+                  />
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="estimatedCompletion" className="text-sm font-medium">Timeline</Label>
+                <div className="relative">
+                  <Input
+                    id="estimatedCompletion"
+                    value={formData.estimatedCompletion}
+                    onChange={(e) => setFormData(prev => ({ ...prev, estimatedCompletion: e.target.value }))}
+                    placeholder="4 weeks"
+                    className="h-10 pl-8"
+                  />
+                  <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-purple-500/20 to-purple-500/10 rounded-xl flex items-center justify-center">
+                <Code className="h-6 w-6 text-purple-500" />
+              </div>
+              <h3 className="text-lg font-semibold">Technologies & Team</h3>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Technologies</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newTech}
+                    onChange={(e) => setNewTech(e.target.value)}
+                    placeholder="Add technology..."
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTechnology())}
+                    className="h-10"
+                  />
+                  <Button type="button" onClick={addTechnology} variant="outline" size="sm" className="h-10 px-3">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.technologies.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {formData.technologies.map((tech) => (
+                      <Badge key={tech} variant="secondary" className="bg-primary/10 text-primary text-xs px-2 py-1">
+                        {tech}
+                        <button
+                          type="button"
+                          onClick={() => removeTechnology(tech)}
+                          className="ml-1 hover:text-destructive transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Team Members</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newTeamMember}
+                    onChange={(e) => setNewTeamMember(e.target.value)}
+                    placeholder="Add team member..."
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTeamMember())}
+                    className="h-10"
+                  />
+                  <Button type="button" onClick={addTeamMember} variant="outline" size="sm" className="h-10 px-3">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.team.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {formData.team.map((member) => (
+                      <Badge key={member} variant="outline" className="text-xs px-2 py-1">
+                        {member}
+                        {member !== 'You' && (
+                          <button
+                            type="button"
+                            onClick={() => removeTeamMember(member)}
+                            className="ml-1 hover:text-destructive transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="w-full max-w-2xl mx-auto h-[600px] flex flex-col">
+      {/* Header */}
+      <div className="text-center mb-4">
+        <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center">
+          <Sparkles className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="text-xl font-bold text-foreground mb-1">Create New Project</h2>
+        <p className="text-sm text-muted-foreground">Let's build something amazing together</p>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs font-medium">Step {currentStep} of {totalSteps}</span>
+          <span className="text-xs text-muted-foreground">{Math.round(progress)}% Complete</span>
+        </div>
+        <Progress value={progress} className="h-1.5" />
+      </div>
+
+      {/* Form Content */}
+      <div className="flex-1 flex flex-col">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
+          <div className="flex-1">
+            {renderStep()}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between pt-4 border-t mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={currentStep === 1 ? onCancel : prevStep}
+              className="px-4"
+            >
+              {currentStep === 1 ? 'Cancel' : 'Previous'}
+            </Button>
             
-            <div className="space-y-2">
-              <Label htmlFor="budget">Budget</Label>
-              <Input
-                id="budget"
-                value={formData.budget}
-                onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
-                placeholder="$10,000"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="estimatedCompletion">Estimated Completion</Label>
-            <Input
-              id="estimatedCompletion"
-              value={formData.estimatedCompletion}
-              onChange={(e) => setFormData(prev => ({ ...prev, estimatedCompletion: e.target.value }))}
-              placeholder="e.g., 4 weeks, 3 months"
-            />
-          </div>
-
-          {/* Technologies */}
-          <div className="space-y-2">
-            <Label>Technologies</Label>
             <div className="flex gap-2">
-              <Input
-                value={newTech}
-                onChange={(e) => setNewTech(e.target.value)}
-                placeholder="Add technology..."
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTechnology())}
-              />
-              <Button type="button" onClick={addTechnology} variant="outline" size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
+              {currentStep < totalSteps ? (
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  className="px-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                >
+                  Next Step
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Create Project
+                </Button>
+              )}
             </div>
-            {formData.technologies.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.technologies.map((tech) => (
-                  <Badge key={tech} variant="secondary" className="bg-primary/10 text-primary">
-                    {tech}
-                    <button
-                      type="button"
-                      onClick={() => removeTechnology(tech)}
-                      className="ml-1 hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Team Members */}
-          <div className="space-y-2">
-            <Label>Team Members</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newTeamMember}
-                onChange={(e) => setNewTeamMember(e.target.value)}
-                placeholder="Add team member..."
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTeamMember())}
-              />
-              <Button type="button" onClick={addTeamMember} variant="outline" size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {formData.team.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.team.map((member) => (
-                  <Badge key={member} variant="outline">
-                    {member}
-                    {member !== 'You' && (
-                      <button
-                        type="button"
-                        onClick={() => removeTeamMember(member)}
-                        className="ml-1 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-to-r from-primary to-primary-glow text-white">
-              Create Project
-            </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

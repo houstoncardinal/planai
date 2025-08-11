@@ -21,6 +21,7 @@ import Insights from "@/pages/Insights";
 import Ideas from "@/pages/Ideas";
 import Settings from "@/pages/Settings";
 import AIAssistantPage from "@/pages/AIAssistant";
+import AIChat from "@/pages/AIChat";
 import CodeReviewPage from "@/pages/CodeReview";
 import PerformancePage from "@/pages/Performance";
 import SecurityPage from "@/pages/Security";
@@ -62,11 +63,12 @@ const App = () => (
                       <Route path="/insights" element={<Insights />} />
                       <Route path="/ideas" element={<Ideas />} />
                       <Route path="/settings" element={<Settings />} />
-                      <Route path="/ai-assistant" element={<AIAssistantPage />} />
-                      <Route path="/code-review" element={<CodeReviewPage />} />
-                      <Route path="/performance" element={<PerformancePage />} />
-                      <Route path="/security" element={<SecurityPage />} />
-                      <Route path="*" element={<NotFound />} />
+                                                                          <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                        <Route path="/ai-chat" element={<AIChat />} />
+                        <Route path="/code-review" element={<CodeReviewPage />} />
+                            <Route path="/performance" element={<PerformancePage />} />
+                            <Route path="/security" element={<SecurityPage />} />
+                            <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
                 </div>

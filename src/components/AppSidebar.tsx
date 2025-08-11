@@ -25,7 +25,8 @@ import {
   Calendar,
   FileText,
   GitBranch,
-  Layers
+  Layers,
+  MessageSquare
 } from "lucide-react";
 
 const navigationItems = [
@@ -99,33 +100,41 @@ const quickActions = [
   {
     title: "AI Assistant",
     icon: Bot,
-    color: "text-violet-500",
-    bgColor: "bg-violet-100",
-    glow: "hover:shadow-violet-500/25",
+    color: "text-blue-500",
+    bgColor: "bg-blue-100",
+    glow: "hover:shadow-blue-500/25",
     href: "/ai-assistant"
+  },
+  {
+    title: "AI Chat",
+    icon: MessageSquare,
+    color: "text-purple-500",
+    bgColor: "bg-purple-100",
+    glow: "hover:shadow-purple-500/25",
+    href: "/ai-chat"
   },
   {
     title: "Code Review",
     icon: Code,
-    color: "text-rose-500",
-    bgColor: "bg-rose-100",
-    glow: "hover:shadow-rose-500/25",
+    color: "text-green-500",
+    bgColor: "bg-green-100",
+    glow: "hover:shadow-green-500/25",
     href: "/code-review"
   },
   {
     title: "Performance",
-    icon: Zap,
-    color: "text-amber-500",
-    bgColor: "bg-amber-100",
-    glow: "hover:shadow-amber-500/25",
+    icon: TrendingUp,
+    color: "text-orange-500",
+    bgColor: "bg-orange-100",
+    glow: "hover:shadow-orange-500/25",
     href: "/performance"
   },
   {
     title: "Security",
     icon: Shield,
-    color: "text-lime-500",
-    bgColor: "bg-lime-100",
-    glow: "hover:shadow-lime-500/25",
+    color: "text-red-500",
+    bgColor: "bg-red-100",
+    glow: "hover:shadow-red-500/25",
     href: "/security"
   }
 ];

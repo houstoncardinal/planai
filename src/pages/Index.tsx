@@ -10,6 +10,7 @@ import { StepPlanningPanel } from "@/components/StepPlanningPanel";
 import { LearningLog } from "@/components/LearningLog";
 import { CodeAnalysisPanel } from "@/components/CodeAnalysisPanel";
 import { HelpCenter, TutorialTooltip, useTutorial } from "@/components/TutorialSystem";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Plus, 
   TrendingUp, 
@@ -29,6 +30,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/stores/appStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import type { Learning, Project, CodeIssue } from "@/types";
 
 // Mock data for enhanced dashboard
@@ -189,10 +191,16 @@ const mockCodeIssues: CodeIssue[] = [
 ];
 
 const Index = () => {
-  const { projects, steps, learnings, codeIssues, addProject, addLearning } = useAppStore();
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { projects, steps, learnings, codeIssues, addProject, updateProject, deleteProject, addLearning } = useAppStore();
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
+  // Tutorial system
   const { startTutorial } = useTutorial();
 
   // Use mock data for demonstration
@@ -205,7 +213,11 @@ const Index = () => {
   };
 
   const handleEditProject = (id: string) => {
-    navigate(`/projects/${id}/edit`);
+    const project = allProjects.find(p => p.id === id);
+    if (project) {
+      setEditingProject(project);
+      setShowEditDialog(true);
+    }
   };
 
   const handleNewProject = () => {
@@ -358,6 +370,151 @@ const Index = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Project Dialog */}
+      {editingProject && (
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Project</DialogTitle>
+              <DialogDescription>
+                Update your project details and settings.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700">Project Name</label>
+                <Input
+                  value={editingProject.title}
+                  onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700">Description</label>
+                <Input
+                  value={editingProject.description}
+                  onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Category</label>
+                  <select
+                    value={editingProject.category}
+                    onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value })}
+                    className="w-full mt-1 border border-slate-200 rounded-md px-3 py-2"
+                  >
+                    <option value="Web Development">Web Development</option>
+                    <option value="Mobile Development">Mobile Development</option>
+                    <option value="AI/ML">AI/ML</option>
+                    <option value="Backend Development">Backend Development</option>
+                    <option value="Frontend Development">Frontend Development</option>
+                    <option value="Full Stack">Full Stack</option>
+                    <option value="DevOps">DevOps</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Priority</label>
+                  <select
+                    value={editingProject.priority}
+                    onChange={(e) => setEditingProject({ ...editingProject, priority: e.target.value as any })}
+                    className="w-full mt-1 border border-slate-200 rounded-md px-3 py-2"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Status</label>
+                  <select
+                    value={editingProject.status}
+                    onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value as any })}
+                    className="w-full mt-1 border border-slate-200 rounded-md px-3 py-2"
+                  >
+                    <option value="planning">Planning</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="review">Review</option>
+                    <option value="completed">Completed</option>
+                    <option value="paused">Paused</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Progress (%)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={editingProject.progress}
+                    onChange={(e) => setEditingProject({ ...editingProject, progress: parseInt(e.target.value) || 0 })}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700">Due Date</label>
+                <Input
+                  type="date"
+                  value={editingProject.dueDate}
+                  onChange={(e) => setEditingProject({ ...editingProject, dueDate: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-between pt-4">
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete this project?')) {
+                    deleteProject(editingProject.id);
+                    setShowEditDialog(false);
+                    setEditingProject(null);
+                    toast({
+                      title: "Project Deleted",
+                      description: "Project has been deleted successfully!",
+                    });
+                  }
+                }}
+              >
+                Delete Project
+              </Button>
+              
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => {
+                  setShowEditDialog(false);
+                  setEditingProject(null);
+                }}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  updateProject(editingProject.id, editingProject);
+                  setShowEditDialog(false);
+                  setEditingProject(null);
+                  toast({
+                    title: "Project Updated",
+                    description: "Project has been updated successfully!",
+                  });
+                }}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

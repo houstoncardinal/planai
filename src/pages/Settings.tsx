@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Settings as SettingsIcon, User, Bell, Shield, Palette } from "lucide-react";
-import { AISettingsPanel } from '@/components/AISettingsPanel';
+import { AIConfigPanel } from '@/components/AIConfigPanel';
 
 const Settings = () => {
   return (
@@ -47,7 +47,7 @@ const Settings = () => {
             </div>
           </CardContent>
         </Card>
-      <AISettingsPanel />
+      <AIConfigPanel />
     </div>
   );
 };

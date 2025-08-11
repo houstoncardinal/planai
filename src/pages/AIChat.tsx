@@ -1,39 +1,46 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Bot, 
-  MessageSquare, 
+  Send, 
+  Sparkles, 
   Code, 
-  Lightbulb, 
-  BookOpen, 
+  Target, 
+  TrendingUp, 
   Zap,
-  Send,
-  Sparkles,
-  Brain,
-  Target,
+  Lightbulb,
   Copy,
   RefreshCw,
   CheckCircle,
   AlertCircle,
+  Brain,
+  MessageSquare,
   Settings,
-  Shield,
-  FileText,
-  Palette,
-  DollarSign
-} from "lucide-react";
-import { useAI } from "@/hooks/useAI";
-import { useToast } from "@/hooks/use-toast";
+  Play,
+  Square,
+  Mic,
+  MicOff
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAI } from '@/hooks/useAI';
+import { AIConfigPanel } from '@/components/AIConfigPanel';
 
 interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  context?: {
+    page?: string;
+    action?: string;
+    data?: any;
+  };
 }
 
 interface QuickPrompt {
@@ -45,7 +52,58 @@ interface QuickPrompt {
   icon: React.ReactNode;
 }
 
-const AIAssistantPage = () => {
+const quickPrompts: QuickPrompt[] = [
+  {
+    id: 'code-review',
+    title: 'Code Review',
+    description: 'Review my code for best practices',
+    prompt: 'Please review this code for best practices, potential bugs, and improvements:',
+    category: 'code',
+    icon: <Code className="h-4 w-4" />
+  },
+  {
+    id: 'bug-fix',
+    title: 'Bug Fixer',
+    description: 'Help me fix this bug',
+    prompt: 'I have a bug in my code. Here\'s the error and the code:',
+    category: 'code',
+    icon: <Zap className="h-4 w-4" />
+  },
+  {
+    id: 'project-plan',
+    title: 'Project Planning',
+    description: 'Create a project plan',
+    prompt: 'Help me create a detailed project plan for:',
+    category: 'project',
+    icon: <Target className="h-4 w-4" />
+  },
+  {
+    id: 'performance',
+    title: 'Performance Optimization',
+    description: 'Optimize my code performance',
+    prompt: 'Please analyze and optimize this code for better performance:',
+    category: 'analysis',
+    icon: <TrendingUp className="h-4 w-4" />
+  },
+  {
+    id: 'learning',
+    title: 'Learning Path',
+    description: 'Create a learning plan',
+    prompt: 'I want to learn about this technology. Create a learning path:',
+    category: 'learning',
+    icon: <Lightbulb className="h-4 w-4" />
+  },
+  {
+    id: 'code-generation',
+    title: 'Code Generation',
+    description: 'Generate code for me',
+    prompt: 'Please generate code for this functionality:',
+    category: 'code',
+    icon: <Sparkles className="h-4 w-4" />
+  }
+];
+
+export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -57,6 +115,7 @@ const AIAssistantPage = () => {
   
   const [inputValue, setInputValue] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showConfig, setShowConfig] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { sendMessage, isLoading, error, isConfigured, data } = useAI();
@@ -100,7 +159,7 @@ const AIAssistantPage = () => {
     if (!isConfigured) {
       toast({
         title: "AI Not Configured",
-        description: "Please configure your OpenAI API key in settings.",
+        description: "Please configure your OpenAI API key in the settings.",
         variant: "destructive"
       });
       return;
@@ -167,103 +226,39 @@ const AIAssistantPage = () => {
     });
   };
 
-  const quickPrompts: QuickPrompt[] = [
-    {
-      id: 'app-idea',
-      title: 'App Idea Generator',
-      description: 'Generate innovative app ideas',
-      prompt: 'I want to create a new app. Please generate innovative app ideas based on current market trends and user needs. Consider mobile, web, and cross-platform solutions.',
-      category: 'project',
-      icon: <Sparkles className="h-4 w-4" />
-    },
-    {
-      id: 'app-architecture',
-      title: 'App Architecture Design',
-      description: 'Design scalable app architecture',
-      prompt: 'I need to design the architecture for my app. Please help me create a scalable, maintainable architecture with proper technology stack recommendations.',
-      category: 'project',
-      icon: <Brain className="h-4 w-4" />
-    },
-    {
-      id: 'development-plan',
-      title: 'Development Planning',
-      description: 'Create comprehensive development plan',
-      prompt: 'I want to plan the development of my app. Please create a detailed development plan with timeline, milestones, and resource allocation.',
-      category: 'project',
-      icon: <Target className="h-4 w-4" />
-    },
-    {
-      id: 'code-review',
-      title: 'Code Review',
-      description: 'Review my code for best practices',
-      prompt: 'Please review this code for best practices, potential bugs, and improvements:',
-      category: 'code',
-      icon: <Code className="h-4 w-4" />
-    },
-    {
-      id: 'performance-optimization',
-      title: 'Performance Optimization',
-      description: 'Optimize app performance',
-      prompt: 'My app is running slowly. Please analyze and optimize this code for better performance, including rendering, bundle size, and database queries:',
-      category: 'analysis',
-      icon: <Zap className="h-4 w-4" />
-    },
-    {
-      id: 'security-review',
-      title: 'Security Review',
-      description: 'Review app security',
-      prompt: 'Please conduct a comprehensive security review of my app code, identifying vulnerabilities and providing remediation strategies:',
-      category: 'analysis',
-      icon: <Shield className="h-4 w-4" />
-    },
-    {
-      id: 'app-documentation',
-      title: 'Generate Documentation',
-      description: 'Create app documentation',
-      prompt: 'Please generate comprehensive documentation for my app, including API docs, setup instructions, and deployment procedures:',
-      category: 'code',
-      icon: <FileText className="h-4 w-4" />
-    },
-    {
-      id: 'bug-fix',
-      title: 'Bug Fixer',
-      description: 'Help me fix this bug',
-      prompt: 'I have a bug in my app. Here\'s the error and the code:',
-      category: 'code',
-      icon: <Zap className="h-4 w-4" />
-    },
-    {
-      id: 'ui-ux-design',
-      title: 'UI/UX Design',
-      description: 'Get design recommendations',
-      prompt: 'I need help with the UI/UX design of my app. Please provide recommendations for user experience, accessibility, and modern design patterns:',
-      category: 'project',
-      icon: <Palette className="h-4 w-4" />
-    },
-    {
-      id: 'monetization',
-      title: 'Monetization Strategy',
-      description: 'Plan app monetization',
-      prompt: 'I want to monetize my app. Please suggest effective monetization strategies, pricing models, and revenue optimization techniques:',
-      category: 'project',
-      icon: <DollarSign className="h-4 w-4" />
-    }
-  ];
-
   const filteredPrompts = selectedCategory === 'all' 
     ? quickPrompts 
     : quickPrompts.filter(prompt => prompt.category === selectedCategory);
+
+  if (showConfig) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">AI Configuration</h1>
+            <p className="text-muted-foreground mt-1">
+              Configure your OpenAI API key to enable AI features
+            </p>
+          </div>
+          <Button onClick={() => setShowConfig(false)} variant="outline">
+            Back to Chat
+          </Button>
+        </div>
+        <AIConfigPanel />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <Bot className="h-6 w-6 text-white" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center">
+            <Brain className="h-6 w-6 text-purple-500" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">AI Assistant</h1>
+            <h1 className="text-3xl font-bold text-foreground">AI Chat Assistant</h1>
             <p className="text-muted-foreground mt-1">
               Your AI-powered development companion
             </p>
@@ -281,6 +276,10 @@ const AIAssistantPage = () => {
               Not Configured
             </Badge>
           )}
+          <Button onClick={() => setShowConfig(true)} variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Configure
+          </Button>
         </div>
       </div>
 
@@ -372,7 +371,7 @@ const AIAssistantPage = () => {
                 </div>
                 {!isConfigured && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Please configure your OpenAI API key in settings to start chatting
+                    Please configure your OpenAI API key to start chatting
                   </p>
                 )}
               </div>
@@ -435,34 +434,46 @@ const AIAssistantPage = () => {
             </CardContent>
           </Card>
 
-          {/* AI Capabilities */}
+          {/* AI Status */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5" />
-                AI Capabilities
+                <Bot className="h-5 w-5" />
+                AI Status
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Code Review & Analysis</span>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">OpenAI Connection</span>
+                {isConfigured ? (
+                  <Badge variant="default" className="bg-green-100 text-green-700">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Connected
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Not Connected
+                  </Badge>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Performance Optimization</span>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Model</span>
+                <span className="text-sm font-medium">GPT-4</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Security Best Practices</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Architecture Guidance</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Debugging Assistance</span>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Status</span>
+                {isLoading ? (
+                  <Badge variant="secondary">
+                    <Play className="h-3 w-3 mr-1" />
+                    Processing
+                  </Badge>
+                ) : (
+                                     <Badge variant="outline">
+                     <Square className="h-3 w-3 mr-1" />
+                     Ready
+                   </Badge>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -470,6 +481,4 @@ const AIAssistantPage = () => {
       </div>
     </div>
   );
-};
-
-export default AIAssistantPage; 
+} 

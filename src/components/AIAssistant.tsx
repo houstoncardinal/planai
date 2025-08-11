@@ -36,9 +36,12 @@ import {
   Globe,
   Smartphone,
   Shield,
-  Palette
+  Palette,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAI } from '@/hooks/useAI';
 
 interface Message {
   id: string;
@@ -171,7 +174,7 @@ const contextSuggestions = {
 
 export function AIAssistant() {
   const [state, setState] = useState<AIAssistantState>({
-    isOpen: false,
+    isOpen: true, // Start with AI Assistant open
     isMinimized: false,
     isListening: false,
     currentContext: 'general',
@@ -182,7 +185,7 @@ export function AIAssistant() {
     {
       id: '1',
       type: 'assistant',
-      content: "Hello! I'm your AI development assistant. I can help you with code reviews, project planning, learning recommendations, and much more. What would you like to work on today?",
+      content: "Hello! I'm your AI development assistant powered by OpenAI. I can help you with code reviews, project planning, learning recommendations, and much more. What would you like to work on today?",
       timestamp: new Date().toISOString()
     }
   ]);
@@ -192,6 +195,7 @@ export function AIAssistant() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { sendMessage, isLoading, error, isConfigured, data } = useAI();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -201,8 +205,45 @@ export function AIAssistant() {
     scrollToBottom();
   }, [messages]);
 
+  // Handle AI responses and errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "AI Error",
+        description: error,
+        variant: "destructive"
+      });
+      setIsTyping(false);
+    }
+  }, [error, toast]);
+
+  // Update the last message with AI response
+  useEffect(() => {
+    if (!isLoading && !error && data) {
+      // Update the last message with the actual AI response
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage && lastMessage.type === 'assistant' && lastMessage.content === 'Thinking...') {
+          lastMessage.content = data.choices?.[0]?.message?.content || 'No response received';
+        }
+        return newMessages;
+      });
+      setIsTyping(false);
+    }
+  }, [isLoading, error, data]);
+
   const handleSendMessage = useCallback(async () => {
     if (!inputValue.trim()) return;
+
+    if (!isConfigured) {
+      toast({
+        title: "AI Not Configured",
+        description: "Please check your OpenAI API key configuration.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -216,17 +257,19 @@ export function AIAssistant() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue('');
     setIsTyping(true);
 
     try {
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
+      await sendMessage(currentInput);
+      
+      // The AI response will be handled by the useAI hook
+      // We'll add a placeholder message that will be updated
       const aiResponse: Message = {
         id: crypto.randomUUID(),
         type: 'assistant',
-        content: generateAIResponse(inputValue, state.currentContext),
+        content: "Thinking...",
         timestamp: new Date().toISOString(),
         context: {
           page: state.currentContext,
@@ -241,10 +284,9 @@ export function AIAssistant() {
         description: "Failed to get AI response. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsTyping(false);
     }
-  }, [inputValue, state.currentContext, toast]);
+  }, [inputValue, state.currentContext, toast, sendMessage, isConfigured]);
 
   const generateAIResponse = (userInput: string, context: string): string => {
     const input = userInput.toLowerCase();
@@ -508,9 +550,19 @@ export function AIAssistant() {
                       Clear
                     </Button>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    Claude 3 Sonnet
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {isConfigured ? (
+                      <Badge variant="secondary" className="text-xs">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        OpenAI GPT-4
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive" className="text-xs">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Not Configured
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 
