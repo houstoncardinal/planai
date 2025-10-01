@@ -32,6 +32,7 @@ export default defineConfig({
     },
   },
   server: {
+    port: 8080,
     // Security headers for development
     headers: {
       'X-Content-Type-Options': 'nosniff',
