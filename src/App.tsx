@@ -9,6 +9,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { TutorialProvider, TutorialOverlay } from "@/components/TutorialSystem";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Pages
 import Index from "@/pages/Index";
@@ -26,6 +27,7 @@ import CodeReviewPage from "@/pages/CodeReview";
 import PerformancePage from "@/pages/Performance";
 import SecurityPage from "@/pages/Security";
 import NotFound from "@/pages/NotFound";
+import Auth from "@/pages/Auth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,37 +46,44 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <SidebarProvider>
-              <div className="flex min-h-screen w-full">
-                <div className="hidden md:block">
-                  <AppSidebar />
-                </div>
-                <div className="flex-1 flex flex-col">
-                  <header className="hidden md:flex h-12 items-center border-b px-4">
-                    <SidebarTrigger />
-                  </header>
-                  <main className="flex-1 md:pt-0 pt-16 pb-20 md:pb-0">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/projects" element={<Projects />} />
-                      <Route path="/projects/:id" element={<ProjectDetail />} />
-                      <Route path="/learnings" element={<Learnings />} />
-                      <Route path="/analysis" element={<Analysis />} />
-                      <Route path="/goals" element={<Goals />} />
-                      <Route path="/insights" element={<Insights />} />
-                      <Route path="/ideas" element={<Ideas />} />
-                      <Route path="/settings" element={<Settings />} />
-                                                                          <Route path="/ai-assistant" element={<AIAssistantPage />} />
-                        <Route path="/ai-chat" element={<AIChat />} />
-                        <Route path="/code-review" element={<CodeReviewPage />} />
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="*" element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen w-full">
+                      <div className="hidden md:block">
+                        <AppSidebar />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <header className="hidden md:flex h-12 items-center border-b px-4">
+                          <SidebarTrigger />
+                        </header>
+                        <main className="flex-1 md:pt-0 pt-16 pb-20 md:pb-0">
+                          <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/projects" element={<Projects />} />
+                            <Route path="/projects/:id" element={<ProjectDetail />} />
+                            <Route path="/learnings" element={<Learnings />} />
+                            <Route path="/analysis" element={<Analysis />} />
+                            <Route path="/goals" element={<Goals />} />
+                            <Route path="/insights" element={<Insights />} />
+                            <Route path="/ideas" element={<Ideas />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                            <Route path="/ai-chat" element={<AIChat />} />
+                            <Route path="/code-review" element={<CodeReviewPage />} />
                             <Route path="/performance" element={<PerformancePage />} />
                             <Route path="/security" element={<SecurityPage />} />
                             <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                </div>
-              </div>
-              <MobileNav />
-              <TutorialOverlay />
+                          </Routes>
+                        </main>
+                      </div>
+                    </div>
+                    <MobileNav />
+                    <TutorialOverlay />
+                  </ProtectedRoute>
+                } />
+              </Routes>
             </SidebarProvider>
           </BrowserRouter>
         </TooltipProvider>
