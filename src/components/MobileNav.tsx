@@ -28,7 +28,7 @@ export function MobileNav() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg">
@@ -104,23 +104,23 @@ export function MobileNav() {
       </div>
 
       {/* Mobile Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border">
-        <div className="flex items-center justify-around p-2">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border shadow-lg safe-area-inset-bottom">
+        <div className="flex items-center justify-around p-2 pb-safe">
           {navItems.map((item) => (
             <NavLink
               key={item.title}
               to={item.url}
               end={item.url === "/"}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${
+                `flex flex-col items-center gap-1 p-2 min-w-[60px] rounded-lg transition-all duration-200 ${
                   isActive
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                    ? "text-primary scale-110"
+                    : "text-muted-foreground hover:text-foreground active:scale-95"
                 }`
               }
             >
-              <item.icon className="h-5 w-5" />
-              <span className="text-xs font-medium">{item.title}</span>
+              <item.icon className={`h-5 w-5 sm:h-6 sm:w-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
+              <span className="text-[10px] sm:text-xs font-medium truncate w-full text-center">{item.title}</span>
             </NavLink>
           ))}
         </div>
