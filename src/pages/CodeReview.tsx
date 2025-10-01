@@ -30,8 +30,8 @@ const CodeReviewPage = () => {
       id: "1",
       file: "src/components/UserDashboard.tsx",
       lines: 285,
-      type: "length",
-      severity: "medium",
+      type: "length" as const,
+      severity: "medium" as const,
       description: "Component is getting large and handles multiple responsibilities",
       suggestion: "Split into smaller components: UserProfile, UserStats, and UserActions",
       resolved: false
@@ -40,8 +40,8 @@ const CodeReviewPage = () => {
       id: "2",
       file: "src/utils/validation.ts",
       lines: 95,
-      type: "duplicate",
-      severity: "low",
+      type: "duplicate" as const,
+      severity: "low" as const,
       description: "Similar validation patterns repeated in multiple functions",
       suggestion: "Create a generic validation factory function to reduce duplication",
       resolved: false
@@ -50,8 +50,8 @@ const CodeReviewPage = () => {
       id: "3",
       file: "src/hooks/useAuth.ts",
       lines: 150,
-      type: "complexity",
-      severity: "medium",
+      type: "complexity" as const,
+      severity: "medium" as const,
       description: "Complex hook with multiple responsibilities and side effects",
       suggestion: "Split into useAuthState and useAuthActions hooks for better separation of concerns",
       resolved: false
@@ -60,8 +60,8 @@ const CodeReviewPage = () => {
       id: "4",
       file: "src/api/endpoints.ts",
       lines: 67,
-      type: "security",
-      severity: "high",
+      type: "complexity" as const,
+      severity: "high" as const,
       description: "Missing input validation for user data",
       suggestion: "Add comprehensive input validation and sanitization",
       resolved: false

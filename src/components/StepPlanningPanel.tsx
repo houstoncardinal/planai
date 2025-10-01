@@ -99,10 +99,10 @@ export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) 
   const completedSteps = steps.filter(s => s.completed).length;
   const activeSteps = steps.filter(s => !s.completed && s.status === "in_progress").length;
   const blockedSteps = steps.filter(s => s.status === "blocked").length;
-  const totalEstimatedHours = steps.reduce((sum, step) => sum + (parseInt(step.estimatedHours) || 0), 0);
+  const totalEstimatedHours = steps.reduce((sum, step) => sum + (step.estimatedHours || 0), 0);
   const completedHours = steps
     .filter(s => s.completed)
-    .reduce((sum, step) => sum + (parseInt(step.estimatedHours) || 0), 0);
+    .reduce((sum, step) => sum + (step.estimatedHours || 0), 0);
 
   const progressPercentage = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
