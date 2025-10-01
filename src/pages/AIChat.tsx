@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Bot, 
@@ -18,18 +17,13 @@ import {
   Copy,
   RefreshCw,
   CheckCircle,
-  AlertCircle,
   Brain,
   MessageSquare,
-  Settings,
   Play,
-  Square,
-  Mic,
-  MicOff
+  Square
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAI } from '@/hooks/useAI';
-import { AIConfigPanel } from '@/components/AIConfigPanel';
+import { useAIChat } from '@/hooks/useAIChat';
 
 interface Message {
   id: string;
@@ -104,98 +98,22 @@ const quickPrompts: QuickPrompt[] = [
 ];
 
 export default function AIChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'assistant',
-      content: "Hello! I'm your AI development assistant powered by OpenAI. I can help you with:\n\n• **Code Review & Analysis** - Review your code for best practices and bugs\n• **Code Generation** - Generate code from descriptions\n• **Project Planning** - Create detailed project plans and timelines\n• **Performance Optimization** - Analyze and optimize your code\n• **Learning Support** - Create learning paths and explain concepts\n• **Bug Fixing** - Help identify and fix bugs\n\nWhat would you like to work on today?",
-      timestamp: new Date().toISOString()
-    }
-  ]);
-  
   const [inputValue, setInputValue] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [showConfig, setShowConfig] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { sendMessage, isLoading, error, isConfigured, data } = useAI();
+  const { messages, isLoading, sendMessage, clearMessages } = useAIChat();
 
-  const scrollToBottom = () => {
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages]);
-
-  // Handle AI responses
-  useEffect(() => {
-    if (!isLoading && !error && data) {
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        if (lastMessage && lastMessage.type === 'assistant' && lastMessage.content === 'Thinking...') {
-          lastMessage.content = data.choices?.[0]?.message?.content || 'No response received';
-        }
-        return newMessages;
-      });
-    }
-  }, [isLoading, error, data]);
-
-  // Handle errors
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "AI Error",
-        description: error,
-        variant: "destructive"
-      });
-    }
-  }, [error, toast]);
 
   const handleSendMessage = useCallback(async () => {
     if (!inputValue.trim()) return;
-
-    if (!isConfigured) {
-      toast({
-        title: "AI Not Configured",
-        description: "Please configure your OpenAI API key in the settings.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date().toISOString()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = inputValue;
+    const content = inputValue;
     setInputValue('');
-
-    // Add thinking message
-    const thinkingMessage: Message = {
-      id: crypto.randomUUID(),
-      type: 'assistant',
-      content: 'Thinking...',
-      timestamp: new Date().toISOString()
-    };
-
-    setMessages(prev => [...prev, thinkingMessage]);
-
-    try {
-      await sendMessage(currentInput);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive"
-      });
-    }
-  }, [inputValue, sendMessage, isConfigured, toast]);
+    await sendMessage(content);
+  }, [inputValue, sendMessage]);
 
   const handleQuickPrompt = useCallback((prompt: QuickPrompt) => {
     setInputValue(prompt.prompt);
@@ -213,41 +131,9 @@ export default function AIChat() {
     });
   };
 
-  const clearConversation = () => {
-    setMessages([{
-      id: '1',
-      type: 'assistant',
-      content: "Hello! I'm your AI development assistant powered by OpenAI. I can help you with:\n\n• **Code Review & Analysis** - Review your code for best practices and bugs\n• **Code Generation** - Generate code from descriptions\n• **Project Planning** - Create detailed project plans and timelines\n• **Performance Optimization** - Analyze and optimize your code\n• **Learning Support** - Create learning paths and explain concepts\n• **Bug Fixing** - Help identify and fix bugs\n\nWhat would you like to work on today?",
-      timestamp: new Date().toISOString()
-    }]);
-    toast({
-      title: "Conversation Cleared",
-      description: "The conversation has been reset."
-    });
-  };
-
   const filteredPrompts = selectedCategory === 'all' 
     ? quickPrompts 
     : quickPrompts.filter(prompt => prompt.category === selectedCategory);
-
-  if (showConfig) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">AI Configuration</h1>
-            <p className="text-muted-foreground mt-1">
-              Configure your OpenAI API key to enable AI features
-            </p>
-          </div>
-          <Button onClick={() => setShowConfig(false)} variant="outline">
-            Back to Chat
-          </Button>
-        </div>
-        <AIConfigPanel />
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">
@@ -264,23 +150,10 @@ export default function AIChat() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {isConfigured ? (
-            <Badge variant="default" className="bg-green-100 text-green-700">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              OpenAI Connected
-            </Badge>
-          ) : (
-            <Badge variant="destructive">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              Not Configured
-            </Badge>
-          )}
-          <Button onClick={() => setShowConfig(true)} variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Configure
-          </Button>
-        </div>
+        <Badge variant="default" className="bg-green-100 text-green-700">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Powered by OpenAI GPT-5 Mini
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -298,7 +171,7 @@ export default function AIChat() {
                     <Copy className="h-3 w-3 mr-1" />
                     Copy
                   </Button>
-                  <Button variant="outline" size="sm" onClick={clearConversation}>
+                  <Button variant="outline" size="sm" onClick={clearMessages}>
                     <RefreshCw className="h-3 w-3 mr-1" />
                     Clear
                   </Button>
@@ -309,9 +182,27 @@ export default function AIChat() {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
-                  {messages.map((message) => (
+                  {messages.length === 0 && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted rounded-lg p-3 max-w-[80%]">
+                        <div className="text-sm whitespace-pre-wrap">
+                          Hello! I'm your AI development assistant powered by OpenAI GPT-5 Mini. I can help you with:
+
+• **Code Review & Analysis** - Review your code for best practices and bugs
+• **Code Generation** - Generate code from descriptions
+• **Project Planning** - Create detailed project plans and timelines
+• **Performance Optimization** - Analyze and optimize your code
+• **Learning Support** - Create learning paths and explain concepts
+• **Bug Fixing** - Help identify and fix bugs
+
+What would you like to work on today?
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {messages.map((message, idx) => (
                     <div
-                      key={message.id}
+                      key={idx}
                       className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
@@ -360,20 +251,14 @@ export default function AIChat() {
                     }}
                     placeholder="Ask me anything about development, code, projects..."
                     className="flex-1"
-                    disabled={!isConfigured}
                   />
                   <Button 
                     onClick={handleSendMessage} 
-                    disabled={!inputValue.trim() || isLoading || !isConfigured}
+                    disabled={!inputValue.trim() || isLoading}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-                {!isConfigured && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Please configure your OpenAI API key to start chatting
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -444,22 +329,15 @@ export default function AIChat() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm">OpenAI Connection</span>
-                {isConfigured ? (
-                  <Badge variant="default" className="bg-green-100 text-green-700">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Connected
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    Not Connected
-                  </Badge>
-                )}
+                <span className="text-sm">AI Provider</span>
+                <Badge variant="default" className="bg-green-100 text-green-700">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Active
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Model</span>
-                <span className="text-sm font-medium">GPT-4</span>
+                <span className="text-sm font-medium">GPT-5 Mini</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Status</span>
