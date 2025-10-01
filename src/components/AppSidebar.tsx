@@ -26,8 +26,11 @@ import {
   FileText,
   GitBranch,
   Layers,
-  MessageSquare
+  MessageSquare,
+  LogOut
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const navigationItems = [
   {
@@ -181,6 +184,16 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Failed to sign out");
+    } else {
+      toast.success("Signed out successfully");
+      navigate("/auth");
+    }
+  };
+
   return (
     <div className="flex h-full w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Header */}
@@ -327,6 +340,20 @@ export function AppSidebar() {
           </div>
         </div>
       </ScrollArea>
+
+      {/* Logout Button */}
+      <div className="border-t px-3 py-2">
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          className="w-full justify-start gap-3 h-11 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        >
+          <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+            <LogOut className="h-4 w-4" />
+          </div>
+          <span className="font-medium">Sign Out</span>
+        </Button>
+      </div>
 
       {/* Footer */}
       <div className="border-t p-4">
