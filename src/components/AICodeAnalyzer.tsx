@@ -25,7 +25,7 @@ import {
   Eye,
   Settings,
   Play,
-  Stop,
+  StopCircle,
   RefreshCw,
   FileCode,
   GitBranch,

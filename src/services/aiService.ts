@@ -17,6 +17,14 @@ export class AIService {
     return !!this.apiKey;
   }
 
+  getConfig() {
+    return {
+      model: this.model,
+      maxTokens: this.maxTokens,
+      temperature: this.temperature
+    };
+  }
+
   private async makeRequest(endpoint: string, data: any): Promise<any> {
     if (!this.apiKey) {
       throw new Error('OpenAI API key not configured');
