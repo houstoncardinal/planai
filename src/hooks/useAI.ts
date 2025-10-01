@@ -74,7 +74,7 @@ export function useAI(): UseAIResult {
       ]);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to send message');
       }
@@ -94,7 +94,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.chatCompletion(messages);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to send messages');
       }
@@ -111,13 +111,14 @@ export function useAI(): UseAIResult {
     setLoading(true);
     try {
       const result = await aiService.analyzeCode(code, language);
-      setLoading(false);
+      setData(result);
       return result;
     } catch (error) {
-      setLoading(false);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setError(errorMessage);
       throw error;
     }
-  }, [setLoading]);
+  }, [setLoading, setError, setData]);
 
   const generateCode = useCallback(async (prompt: string, language: string = 'javascript') => {
     if (!aiService.isConfigured()) {
@@ -130,7 +131,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.generateCode(prompt, language);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to generate code');
       }
@@ -150,7 +151,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.optimizeCode(code, language);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to optimize code');
       }
@@ -170,7 +171,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.refactorCode(code, language);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to refactor code');
       }
@@ -190,7 +191,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.explainCode(code, language);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to explain code');
       }
@@ -210,7 +211,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.suggestImprovements(code, language);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to suggest improvements');
       }
@@ -230,7 +231,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.generateTests(code, language);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to generate tests');
       }
@@ -251,7 +252,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.generateAppIdea(prompt);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to generate app idea');
       }
@@ -271,7 +272,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.designAppArchitecture(requirements);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to design app architecture');
       }
@@ -291,7 +292,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.planAppDevelopment(projectDescription);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to plan app development');
       }
@@ -311,7 +312,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.optimizeAppPerformance(code, platform);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to optimize app performance');
       }
@@ -331,7 +332,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.reviewAppSecurity(code, platform);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to review app security');
       }
@@ -351,7 +352,7 @@ export function useAI(): UseAIResult {
       const response = await aiService.generateAppDocumentation(code, projectType);
 
       if (response.success) {
-        setData(response.data);
+        setData(response.choices[0]?.message.content);
       } else {
         setError(response.error || 'Failed to generate app documentation');
       }
@@ -380,4 +381,4 @@ export function useAI(): UseAIResult {
     reset,
     isConfigured: aiService.isConfigured(),
   };
-} 
+}
