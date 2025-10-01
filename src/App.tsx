@@ -50,32 +50,34 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="*" element={
                   <ProtectedRoute>
-                    <div className="flex min-h-screen w-full">
-                      <div className="hidden md:block">
+                    <div className="flex min-h-screen w-full bg-background">
+                      <div className="hidden lg:block">
                         <AppSidebar />
                       </div>
-                      <div className="flex-1 flex flex-col">
-                        <header className="hidden md:flex h-12 items-center border-b px-4">
+                      <div className="flex-1 flex flex-col w-full min-w-0">
+                        <header className="hidden lg:flex h-12 items-center border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
                           <SidebarTrigger />
                         </header>
-                        <main className="flex-1 md:pt-0 pt-16 pb-20 md:pb-0">
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/projects" element={<Projects />} />
-                            <Route path="/projects/:id" element={<ProjectDetail />} />
-                            <Route path="/learnings" element={<Learnings />} />
-                            <Route path="/analysis" element={<Analysis />} />
-                            <Route path="/goals" element={<Goals />} />
-                            <Route path="/insights" element={<Insights />} />
-                            <Route path="/ideas" element={<Ideas />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/ai-assistant" element={<AIAssistantPage />} />
-                            <Route path="/ai-chat" element={<AIChat />} />
-                            <Route path="/code-review" element={<CodeReviewPage />} />
-                            <Route path="/performance" element={<PerformancePage />} />
-                            <Route path="/security" element={<SecurityPage />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
+                        <main className="flex-1 w-full pt-14 pb-20 lg:pt-0 lg:pb-0 overflow-x-hidden">
+                          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+                            <Routes>
+                              <Route path="/" element={<Index />} />
+                              <Route path="/projects" element={<Projects />} />
+                              <Route path="/projects/:id" element={<ProjectDetail />} />
+                              <Route path="/learnings" element={<Learnings />} />
+                              <Route path="/analysis" element={<Analysis />} />
+                              <Route path="/goals" element={<Goals />} />
+                              <Route path="/insights" element={<Insights />} />
+                              <Route path="/ideas" element={<Ideas />} />
+                              <Route path="/settings" element={<Settings />} />
+                              <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                              <Route path="/ai-chat" element={<AIChat />} />
+                              <Route path="/code-review" element={<CodeReviewPage />} />
+                              <Route path="/performance" element={<PerformancePage />} />
+                              <Route path="/security" element={<SecurityPage />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </div>
                         </main>
                       </div>
                     </div>

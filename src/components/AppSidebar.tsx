@@ -195,7 +195,7 @@ export function AppSidebar() {
   };
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex h-screen w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 overflow-hidden">
       {/* Header */}
       <div className="flex h-14 items-center border-b px-4">
         <div className="flex items-center gap-2">
