@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import Seo from "@/components/Seo";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface Goal {
   id: string;
@@ -17,63 +19,41 @@ interface Goal {
   progress: number; // 0-100
 }
 
-// Add validation utilities
-const isValidGoal = (goal: unknown): goal is Goal => {
-  return (
-    goal &&
-    typeof goal === 'object' &&
-    goal !== null &&
-    'id' in goal &&
-    'title' in goal &&
-    'progress' in goal &&
-    typeof (goal as Goal).id === 'string' &&
-    typeof (goal as Goal).title === 'string' &&
-    typeof (goal as Goal).progress === 'number' &&
-    (goal as Goal).title.trim().length > 0 &&
-    (goal as Goal).progress >= 0 &&
-    (goal as Goal).progress <= 100 &&
-    (!('targetDate' in goal) || typeof (goal as Goal).targetDate === 'string')
-  )
-}
-
-const validateGoalsData = (data: unknown): Goal[] => {
-  if (!Array.isArray(data)) return []
-  
-  return data.filter(isValidGoal).map(goal => ({
-    ...goal,
-    title: goal.title.trim(),
-    progress: Math.max(0, Math.min(100, goal.progress))
-  }))
-}
-
-const getDefaultGoals = (): Goal[] => [
-  { id: "g1", title: "Ship MVP", targetDate: new Date(Date.now() + 86400000 * 7).toISOString(), progress: 40 },
-  { id: "g2", title: "Write docs", targetDate: new Date(Date.now() + 86400000 * 14).toISOString(), progress: 20 },
-]
-
 export default function Goals() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
-  const [goals, setGoals] = useState<Goal[]>(() => {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load goals from Supabase
+  useEffect(() => {
+    loadGoals();
+  }, []);
+
+  const loadGoals = async () => {
     try {
-      const raw = localStorage.getItem("dt_goals");
-      if (!raw) return getDefaultGoals()
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedGoals = (data || []).map((goal: any) => ({
+        id: goal.id,
+        title: goal.title,
+        targetDate: goal.target_date || undefined,
+        progress: goal.progress || 0,
+      }));
       
-      const parsed = JSON.parse(raw)
-      const validated = validateGoalsData(parsed)
-      
-      // If validation failed, use defaults
-      if (validated.length === 0) {
-        console.warn('Invalid goals data found in localStorage, using defaults')
-        return getDefaultGoals()
-      }
-      
-      return validated
-    } catch (error) {
-      console.error('Error loading goals from localStorage:', error)
-      return getDefaultGoals()
+      setGoals(formattedGoals);
+    } catch (error: any) {
+      toast.error(error.message || "Error loading goals");
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
 
   const stats = useMemo(() => {
     const total = goals.length;
@@ -94,17 +74,7 @@ export default function Goals() {
     return false;
   }, [title, date]);
 
-  useEffect(() => {
-    try {
-      const serialized = JSON.stringify(goals)
-      localStorage.setItem("dt_goals", serialized)
-    } catch (error) {
-      console.error('Error saving goals to localStorage:', error)
-      // Could show a toast notification here
-    }
-  }, [goals]);
-
-  function addGoal() {
+  async function addGoal() {
     const t = title.trim();
     if (!t) {
       toast.error("Please enter a goal title");
@@ -119,29 +89,84 @@ export default function Goals() {
         return;
       }
     }
-    setGoals((prev) => [
-      { id: crypto.randomUUID(), title: t, targetDate: date || undefined, progress: 0 },
-      ...prev,
-    ]);
-    setTitle("");
-    setDate("");
-    toast.success("Goal added");
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from('goals')
+        .insert({
+          title: t,
+          target_date: date || null,
+          progress: 0,
+          user_id: user.id,
+        });
+
+      if (error) throw error;
+
+      await loadGoals();
+      setTitle("");
+      setDate("");
+      toast.success("Goal added");
+    } catch (error: any) {
+      toast.error(error.message || "Error adding goal");
+    }
   }
 
-  function updateProgress(id: string, value: number) {
-    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, progress: value } : g)));
+  async function updateProgress(id: string, value: number) {
+    try {
+      const { error } = await supabase
+        .from('goals')
+        .update({ progress: value })
+        .eq('id', id);
+
+      if (error) throw error;
+      await loadGoals();
+    } catch (error: any) {
+      toast.error(error.message || "Error updating progress");
+    }
   }
 
-  function removeGoal(id: string) {
+  async function removeGoal(id: string) {
     const ok = window.confirm("Remove this goal?");
     if (!ok) return;
-    setGoals((prev) => prev.filter((g) => g.id !== id));
-    toast.success("Goal removed");
+
+    try {
+      const { error } = await supabase
+        .from('goals')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      await loadGoals();
+      toast.success("Goal removed");
+    } catch (error: any) {
+      toast.error(error.message || "Error removing goal");
+    }
   }
 
-  function completeGoal(id: string) {
-    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, progress: 100 } : g)));
-    toast.success("Goal marked complete");
+  async function completeGoal(id: string) {
+    try {
+      const { error } = await supabase
+        .from('goals')
+        .update({ progress: 100 })
+        .eq('id', id);
+
+      if (error) throw error;
+      await loadGoals();
+      toast.success("Goal marked complete");
+    } catch (error: any) {
+      toast.error(error.message || "Error completing goal");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
