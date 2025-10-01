@@ -24,10 +24,12 @@ import {
   Globe,
   Heart,
   SortAsc, 
-  SortDesc
+  SortDesc,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Project {
   id: string;
@@ -67,22 +69,49 @@ const Projects = () => {
 
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load projects from localStorage
+  // Load projects from Supabase
   useEffect(() => {
-    const savedProjects = JSON.parse(localStorage.getItem('devtracker_projects') || '[]');
-    const formattedProjects = savedProjects.map((project: any) => ({
-      ...project,
-      status: project.status || 'active',
-      priority: project.priority || 'medium',
-      progress: project.progress || 0,
-      tags: project.tags || [],
-      team: project.team || [],
-      isFavorite: project.isFavorite || false,
-      category: project.category || 'web',
-    }));
-    setProjects(formattedProjects);
+    loadProjects();
   }, []);
+
+  const loadProjects = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedProjects = (data || []).map((project: any) => ({
+        id: project.id,
+        name: project.title,
+        description: project.description || '',
+        category: project.category || 'web',
+        status: project.status || 'active',
+        priority: project.priority || 'medium',
+        progress: project.progress || 0,
+        createdAt: project.created_at,
+        lastModified: project.updated_at,
+        tags: project.technologies || [],
+        team: project.team || [],
+        isFavorite: false,
+      }));
+      
+      setProjects(formattedProjects);
+    } catch (error: any) {
+      toast({
+        title: "Error loading projects",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Filter and sort projects
   useEffect(() => {
@@ -149,7 +178,7 @@ const Projects = () => {
     { id: 'draft', name: 'Draft', count: projects.filter(p => p.status === 'draft').length },
   ];
 
-  const createProject = () => {
+  const createProject = async () => {
     if (!newProject.name.trim()) {
       toast({
         title: "Error",
@@ -159,58 +188,99 @@ const Projects = () => {
       return;
     }
 
-    const project: Project = {
-      id: Date.now().toString(),
-      name: newProject.name,
-      description: newProject.description,
-      category: newProject.category,
-      status: 'active',
-      priority: newProject.priority,
-      progress: 0,
-      createdAt: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-      tags: newProject.tags,
-      team: [],
-      isFavorite: false,
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-    const updatedProjects = [...projects, project];
-    setProjects(updatedProjects);
-    localStorage.setItem('devtracker_projects', JSON.stringify(updatedProjects));
-    
-    setNewProject({ name: '', description: '', category: 'web', priority: 'medium', tags: [] });
-    setShowCreateDialog(false);
-    
-    toast({
-      title: "Project Created",
-      description: `Project "${project.name}" has been created successfully!`,
-    });
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          title: newProject.name,
+          description: newProject.description,
+          category: newProject.category,
+          status: 'active',
+          priority: newProject.priority,
+          progress: 0,
+          technologies: newProject.tags,
+          team: [],
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await loadProjects();
+      
+      setNewProject({ name: '', description: '', category: 'web', priority: 'medium', tags: [] });
+      setShowCreateDialog(false);
+      
+      toast({
+        title: "Project Created",
+        description: `Project "${newProject.name}" has been created successfully!`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error creating project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const updateProject = (projectId: string, updates: Partial<Project>) => {
-    const updatedProjects = projects.map(project => 
-      project.id === projectId 
-        ? { ...project, ...updates, lastModified: new Date().toISOString() }
-        : project
-    );
-    setProjects(updatedProjects);
-    localStorage.setItem('devtracker_projects', JSON.stringify(updatedProjects));
-    
-    toast({
-      title: "Project Updated",
-      description: "Project has been updated successfully!",
-    });
+  const updateProject = async (projectId: string, updates: Partial<Project>) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          title: updates.name,
+          description: updates.description,
+          category: updates.category,
+          status: updates.status,
+          priority: updates.priority,
+          progress: updates.progress,
+        })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      await loadProjects();
+      
+      toast({
+        title: "Project Updated",
+        description: "Project has been updated successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const deleteProject = (projectId: string) => {
-    const updatedProjects = projects.filter(project => project.id !== projectId);
-    setProjects(updatedProjects);
-    localStorage.setItem('devtracker_projects', JSON.stringify(updatedProjects));
-    
-    toast({
-      title: "Project Deleted",
-      description: "Project has been deleted successfully!",
-    });
+  const deleteProject = async (projectId: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      await loadProjects();
+      
+      toast({
+        title: "Project Deleted",
+        description: "Project has been deleted successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleFavorite = (projectId: string) => {
@@ -267,6 +337,14 @@ const Projects = () => {
       default: return Folder;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
