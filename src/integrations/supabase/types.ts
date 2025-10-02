@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      code_issues: {
+        Row: {
+          created_at: string
+          description: string
+          file: string
+          id: string
+          lines: number
+          project_id: string | null
+          resolved: boolean
+          resolved_at: string | null
+          severity: string
+          suggestion: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          file: string
+          id?: string
+          lines: number
+          project_id?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          severity: string
+          suggestion: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          file?: string
+          id?: string
+          lines?: number
+          project_id?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+          suggestion?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_issues_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           created_at: string
@@ -43,6 +99,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      learnings: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          project: string | null
+          project_id: string | null
+          related_step: string | null
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          project?: string | null
+          project_id?: string | null
+          related_step?: string | null
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          project?: string | null
+          project_id?: string | null
+          related_step?: string | null
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learnings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -127,6 +233,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      steps: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          impact: string[] | null
+          learnings: string[] | null
+          notes: string | null
+          project_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: string[] | null
+          learnings?: string[] | null
+          notes?: string | null
+          project_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: string[] | null
+          learnings?: string[] | null
+          notes?: string | null
+          project_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "steps_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
