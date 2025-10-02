@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearningLog } from "@/components/LearningLog";
-import { BookOpen, TrendingUp, Lightbulb, Search, Filter, Calendar, Target } from "lucide-react";
+import { BookOpen, TrendingUp, Search, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // Enhanced mock learning data
 const mockLearnings = [
@@ -63,20 +65,88 @@ const mockLearnings = [
 ];
 
 const Learnings = () => {
-  const [learnings, setLearnings] = useState(mockLearnings);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [learnings, setLearnings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
 
-  const addLearning = (learning: any) => {
-    const newLearning = {
-      ...learning,
-      id: Date.now().toString(),
-      date: 'Just now'
-    };
-    setLearnings([newLearning, ...learnings]);
+  useEffect(() => {
+    loadLearnings();
+  }, []);
+
+  const loadLearnings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('learnings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Format data to match UI expectations
+      const formattedData = (data || []).map(l => ({
+        ...l,
+        date: new Date(l.created_at).toLocaleDateString()
+      }));
+      
+      setLearnings(formattedData);
+    } catch (error: any) {
+      toast({
+        title: "Error loading learnings",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const addLearning = async (learning: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('learnings')
+        .insert([{
+          user_id: user.id,
+          ...learning
+        }]);
+
+      if (error) throw error;
+      
+      await loadLearnings();
+      toast({
+        title: "Learning added",
+        description: "Your learning has been saved successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error adding learning",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const filteredLearnings = learnings.filter(learning => {
     const matchesSearch = learning.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
