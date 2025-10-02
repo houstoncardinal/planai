@@ -79,9 +79,17 @@ const Projects = () => {
   const loadProjects = async () => {
     try {
       setIsLoading(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -179,7 +187,11 @@ const Projects = () => {
   ];
 
   const createProject = async () => {
-    if (!newProject.name.trim()) {
+    // Validation
+    const trimmedName = newProject.name.trim();
+    const trimmedDescription = newProject.description.trim();
+    
+    if (!trimmedName) {
       toast({
         title: "Error",
         description: "Project name is required",
@@ -188,20 +200,46 @@ const Projects = () => {
       return;
     }
 
+    if (trimmedName.length > 100) {
+      toast({
+        title: "Error",
+        description: "Project name must be less than 100 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (trimmedDescription.length > 500) {
+      toast({
+        title: "Error",
+        description: "Description must be less than 500 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create projects",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
 
       const { data, error } = await supabase
         .from('projects')
         .insert({
-          title: newProject.name,
-          description: newProject.description,
+          title: trimmedName,
+          description: trimmedDescription,
           category: newProject.category,
           status: 'active',
           priority: newProject.priority,
           progress: 0,
-          technologies: newProject.tags,
+          technologies: newProject.tags.filter(tag => tag.trim()),
           team: [],
           user_id: user.id,
         })
@@ -217,12 +255,13 @@ const Projects = () => {
       
       toast({
         title: "Project Created",
-        description: `Project "${newProject.name}" has been created successfully!`,
+        description: `Project "${trimmedName}" has been created successfully!`,
       });
     } catch (error: any) {
+      console.error('Error creating project:', error);
       toast({
         title: "Error creating project",
-        description: error.message,
+        description: error.message || "Failed to create project. Please try again.",
         variant: "destructive",
       });
     }
@@ -230,6 +269,12 @@ const Projects = () => {
 
   const updateProject = async (projectId: string, updates: Partial<Project>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
         .update({
@@ -240,7 +285,8 @@ const Projects = () => {
           priority: updates.priority,
           progress: updates.progress,
         })
-        .eq('id', projectId);
+        .eq('id', projectId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -261,10 +307,17 @@ const Projects = () => {
 
   const deleteProject = async (projectId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
         .delete()
-        .eq('id', projectId);
+        .eq('id', projectId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -287,24 +340,43 @@ const Projects = () => {
     updateProject(projectId, { isFavorite: !projects.find(p => p.id === projectId)?.isFavorite });
   };
 
-  const duplicateProject = (project: Project) => {
-    const duplicatedProject: Project = {
-      ...project,
-      id: Date.now().toString(),
-      name: `${project.name} (Copy)`,
-      createdAt: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-      isFavorite: false,
-    };
+  const duplicateProject = async (project: Project) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
 
-    const updatedProjects = [...projects, duplicatedProject];
-    setProjects(updatedProjects);
-    localStorage.setItem('devtracker_projects', JSON.stringify(updatedProjects));
-    
-    toast({
-      title: "Project Duplicated",
-      description: `Project "${duplicatedProject.name}" has been created!`,
-    });
+      const { error } = await supabase
+        .from('projects')
+        .insert({
+          title: `${project.name} (Copy)`,
+          description: project.description,
+          category: project.category,
+          status: 'draft',
+          priority: project.priority,
+          progress: 0,
+          technologies: project.tags,
+          team: project.team,
+          user_id: user.id,
+        });
+
+      if (error) throw error;
+
+      await loadProjects();
+      
+      toast({
+        title: "Project Duplicated",
+        description: `Project "${project.name} (Copy)" has been created!`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error duplicating project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const getPriorityColor = (priority: string) => {
