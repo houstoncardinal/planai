@@ -419,14 +419,15 @@ const Projects = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full overflow-x-hidden">
+      <div className="w-full max-w-none px-4 md:px-6 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Projects</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Projects</h1>
           <p className="text-slate-600 mt-1">Manage and organize your development projects</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
@@ -436,7 +437,7 @@ const Projects = () => {
           </Button>
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="h-10 px-6 bg-black hover:bg-slate-800"
+            className="h-10 px-4 md:px-6 bg-black hover:bg-slate-800 flex-1 sm:flex-initial"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Project
@@ -445,10 +446,10 @@ const Projects = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6">
+        <div className="flex flex-col gap-4">
           {/* Search */}
-          <div className="flex-1">
+          <div className="w-full">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
@@ -461,17 +462,18 @@ const Projects = () => {
           </div>
 
           {/* Category Filter */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-2">
             {categories.map((category) => (
               <Button
                 key={category.id}
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category.id)}
-                className="h-10 px-3"
+                className="h-10 px-3 whitespace-nowrap"
               >
                 <category.icon className="h-4 w-4 mr-2" />
-                {category.name}
+                <span className="hidden sm:inline">{category.name}</span>
+                <span className="sm:hidden">{category.id === 'all' ? 'All' : category.name.split(' ')[0]}</span>
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {category.count}
                 </Badge>
@@ -1018,6 +1020,7 @@ const Projects = () => {
           </DialogContent>
         </Dialog>
       )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAppStore } from "@/stores/appStore";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -15,117 +15,18 @@ import { EnhancedProjectMetrics } from "@/components/EnhancedProjectMetrics";
 import { 
   ArrowLeft, 
   Calendar, 
-  CheckCircle, 
   Clock, 
-  Target, 
-  TrendingUp,
+  Target,
   Users,
   GitBranch,
-  Star
+  Loader2
 } from "lucide-react";
-
-// Enhanced project data with detailed information
-const projectsData = {
-  '1': {
-    id: '1',
-    title: 'E-commerce Platform',
-    description: 'Building a modern e-commerce solution with React and Node.js',
-    progress: 65,
-    status: 'in-progress' as const,
-    dueDate: 'Dec 15, 2024',
-    stepsCompleted: 8,
-    totalSteps: 12,
-    lastUpdated: '2 hours ago',
-    category: 'Web Development',
-    priority: 'high',
-    technologies: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-    team: ['You', 'Sarah Chen', 'Mike Rodriguez'],
-    budget: '$45,000',
-    timeSpent: '180 hours',
-    estimatedCompletion: '3 weeks'
-  },
-  '2': {
-    id: '2',
-    title: 'Mobile App MVP',
-    description: 'React Native app for task management with offline support',
-    progress: 30,
-    status: 'planning' as const,
-    dueDate: 'Jan 20, 2025',
-    stepsCompleted: 3,
-    totalSteps: 10,
-    lastUpdated: '1 day ago',
-    category: 'Mobile Development',
-    priority: 'medium',
-    technologies: ['React Native', 'Firebase', 'Redux'],
-    team: ['You', 'Alex Thompson'],
-    budget: '$25,000',
-    timeSpent: '45 hours',
-    estimatedCompletion: '6 weeks'
-  },
-  '3': {
-    id: '3',
-    title: 'Portfolio Website',
-    description: 'Personal portfolio built with React and Tailwind CSS',
-    progress: 100,
-    status: 'completed' as const,
-    dueDate: 'Nov 30, 2024',
-    stepsCompleted: 6,
-    totalSteps: 6,
-    lastUpdated: '1 week ago',
-    category: 'Web Development',
-    priority: 'low',
-    technologies: ['React', 'Tailwind', 'Framer Motion'],
-    team: ['You'],
-    budget: '$5,000',
-    timeSpent: '80 hours',
-    estimatedCompletion: 'Completed'
-  }
-};
-
-const mockSteps = {
-  '1': [
-    {
-      id: '1',
-      title: 'Set up project architecture',
-      description: 'Initialize React app with TypeScript and essential dependencies',
-      completed: true,
-      notes: 'Used Vite for faster development. Added ESLint and Prettier.',
-      learnings: ['Vite is much faster than Create React App', 'TypeScript setup was smoother than expected'],
-      impact: ['Faster development cycle', 'Better code quality from start']
-    },
-    {
-      id: '2',
-      title: 'Design product catalog system',
-      description: 'Create reusable components for product display and filtering',
-      completed: true,
-      notes: 'Implemented with React Query for caching and state management',
-      learnings: ['React Query simplifies server state', 'Component composition patterns'],
-      impact: ['Improved performance', 'Better user experience']
-    },
-    {
-      id: '3',
-      title: 'Implement shopping cart',
-      description: 'Add cart functionality with local storage persistence',
-      completed: true,
-      notes: 'Used Context API with useReducer for cart state',
-      learnings: ['Context API good for app-wide state', 'useReducer for complex state logic'],
-      impact: ['Seamless cart experience', 'Data persistence']
-    },
-    {
-      id: '4',
-      title: 'Payment integration',
-      description: 'Integrate Stripe for secure payment processing',
-      completed: false,
-      notes: 'Researching best practices for PCI compliance',
-      learnings: [],
-      impact: []
-    }
-  ]
-};
+import { toast } from "sonner";
 
 const statusConfig = {
   planning: { color: 'bg-warning text-white', label: 'Planning' },
   'in-progress': { color: 'bg-primary text-white', label: 'In Progress' },
+  active: { color: 'bg-primary text-white', label: 'Active' },
   review: { color: 'bg-accent text-white', label: 'Review' },
   completed: { color: 'bg-success text-white', label: 'Completed' }
 };
@@ -133,47 +34,137 @@ const statusConfig = {
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { 
-    getProjectById, 
-    getStepsByProjectId, 
-    getLearningsByProjectId, 
-    getCodeIssuesByProjectId,
-    addLearning
-  } = useAppStore();
-
-  const project = getProjectById(id || '');
-  const steps = getStepsByProjectId(id || '');
-  const learnings = getLearningsByProjectId(id || '');
-  const codeIssues = getCodeIssuesByProjectId(id || '');
+  const [project, setProject] = useState<any>(null);
+  const [steps, setSteps] = useState<any[]>([]);
+  const [learnings, setLearnings] = useState<any[]>([]);
+  const [codeIssues, setCodeIssues] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!project) {
+    loadProjectData();
+  }, [id]);
+
+  const loadProjectData = async () => {
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
+      // Load project
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (projectError) throw projectError;
+
+      if (!projectData) {
+        navigate('/projects');
+        return;
+      }
+
+      setProject({
+        id: projectData.id,
+        title: projectData.title,
+        description: projectData.description || '',
+        progress: projectData.progress || 0,
+        status: projectData.status || 'active',
+        dueDate: projectData.due_date || '',
+        category: projectData.category || '',
+        priority: projectData.priority || 'medium',
+        technologies: projectData.technologies || [],
+        team: projectData.team || [],
+        budget: projectData.budget || '',
+        timeSpent: projectData.time_spent || '',
+        estimatedCompletion: projectData.estimated_completion || '',
+        stepsCompleted: 0,
+        totalSteps: 0,
+      });
+
+      // Load steps
+      const { data: stepsData } = await supabase
+        .from('steps')
+        .select('*')
+        .eq('project_id', id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      setSteps(stepsData || []);
+
+      // Load learnings
+      const { data: learningsData } = await supabase
+        .from('learnings')
+        .select('*')
+        .eq('project_id', id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      setLearnings(learningsData || []);
+
+      // Load code issues
+      const { data: issuesData } = await supabase
+        .from('code_issues')
+        .select('*')
+        .eq('project_id', id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      setCodeIssues(issuesData || []);
+    } catch (error: any) {
+      toast.error(error.message || "Error loading project data");
       navigate('/projects');
+    } finally {
+      setIsLoading(false);
     }
-  }, [project, navigate]);
+  };
+
+  const handleAddLearning = async (learning: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('learnings')
+        .insert({
+          ...learning,
+          project_id: id,
+          user_id: user.id,
+        });
+
+      if (error) throw error;
+      await loadProjectData();
+      toast.success("Learning added successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Error adding learning");
+    }
+  };
+
+  const refreshCodeAnalysis = async () => {
+    await loadProjectData();
+  };
+
+  const viewFile = (file: string) => {
+    console.log('View file:', file);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!project) {
     return null;
   }
 
-  const handleAddLearning = (learning: any) => {
-    // TODO: Implement learning addition
-    // This would typically save to the backend
-  };
-
-  const refreshCodeAnalysis = () => {
-    // TODO: Implement code analysis refresh
-  };
-
-  const viewFile = (file: string) => {
-    // TODO: Implement file viewing
-  };
-
-  const applyInsight = (insight: any) => {
-    // TODO: Implement insight application
-  };
-
-  const status = statusConfig[project.status];
+  const status = statusConfig[project.status] || statusConfig.active;
 
   return (
     <div className="w-full overflow-x-hidden">
@@ -272,7 +263,7 @@ const ProjectDetail = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="planning" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="planning">Planning</TabsTrigger>
           <TabsTrigger value="metrics">Metrics</TabsTrigger>
           <TabsTrigger value="collaboration">Team</TabsTrigger>
