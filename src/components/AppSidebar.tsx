@@ -27,7 +27,8 @@ import {
   GitBranch,
   Layers,
   MessageSquare,
-  LogOut
+  LogOut,
+  Mic
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -88,6 +89,14 @@ const navigationItems = [
     color: "text-indigo-500",
     bgColor: "bg-indigo-100",
     glow: "hover:shadow-indigo-500/25"
+  },
+  {
+    title: "Voice Notes",
+    href: "/voice-notes",
+    icon: Mic,
+    color: "text-rose-500",
+    bgColor: "bg-rose-100",
+    glow: "hover:shadow-rose-500/25"
   },
   {
     title: "Settings",

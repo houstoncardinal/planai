@@ -461,52 +461,55 @@ const Projects = () => {
             </div>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="h-10 px-3 whitespace-nowrap"
-              >
-                <category.icon className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">{category.name}</span>
-                <span className="sm:hidden">{category.id === 'all' ? 'All' : category.name.split(' ')[0]}</span>
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {category.count}
-                </Badge>
-              </Button>
-            ))}
+          {/* Category Filter - Horizontal scrollable on mobile */}
+          <div className="w-full overflow-x-auto">
+            <div className="flex gap-2 pb-2 min-w-max">
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category.id)}
+                  className="h-9 px-3 whitespace-nowrap flex-shrink-0"
+                >
+                  <category.icon className="h-3.5 w-3.5 mr-1.5" />
+                  <span className="text-xs">{category.id === 'all' ? 'All' : category.name}</span>
+                  <Badge variant="secondary" className="ml-1.5 text-xs px-1.5">
+                    {category.count}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Status and Sort */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
-          <div className="flex gap-2">
-            {statuses.map((status) => (
-              <Button
-                key={status.id}
-                variant={selectedStatus === status.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedStatus(status.id)}
-                className="h-8 px-3"
-              >
-                {status.name}
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {status.count}
-                </Badge>
-              </Button>
-            ))}
+        {/* Status and Sort - Mobile Friendly */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t border-slate-200 gap-3">
+          <div className="w-full overflow-x-auto">
+            <div className="flex gap-2 pb-1 min-w-max">
+              {statuses.map((status) => (
+                <Button
+                  key={status.id}
+                  variant={selectedStatus === status.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedStatus(status.id)}
+                  className="h-8 px-3 flex-shrink-0"
+                >
+                  <span className="text-xs">{status.name}</span>
+                  <Badge variant="secondary" className="ml-1.5 text-xs px-1.5">
+                    {status.count}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-600">Sort by:</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Sort:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="border border-slate-200 rounded-md px-3 py-1 text-sm"
+              className="border border-slate-200 rounded-md px-2 py-1 text-xs sm:text-sm flex-1 sm:flex-initial"
             >
               <option value="name">Name</option>
               <option value="date">Date</option>

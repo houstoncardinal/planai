@@ -51,6 +51,10 @@ interface FormData {
   budget: string;
   timeSpent: string;
   estimatedCompletion: string;
+  accountEmail: string;
+  accountPlatform: string;
+  projectUrl: string;
+  accountNotes: string;
 }
 
 const categoryIcons = {
@@ -88,10 +92,14 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
     team: ["You"],
     budget: "",
     timeSpent: "",
-    estimatedCompletion: ""
+    estimatedCompletion: "",
+    accountEmail: "",
+    accountPlatform: "lovable",
+    projectUrl: "",
+    accountNotes: ""
   });
 
-  const totalSteps = 3;
+  const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -418,6 +426,75 @@ export function ProjectForm({ onCancel, onSuccess }: ProjectFormProps) {
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-4">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-orange-500/20 to-orange-500/10 rounded-xl flex items-center justify-center">
+                <Globe className="h-6 w-6 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold">Account Tracking</h3>
+              <p className="text-xs text-muted-foreground">Track which platform/account this project lives in</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="accountPlatform" className="text-sm font-medium">Platform</Label>
+                <Select
+                  value={formData.accountPlatform}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, accountPlatform: value }))}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lovable">Lovable</SelectItem>
+                    <SelectItem value="github">GitHub</SelectItem>
+                    <SelectItem value="vercel">Vercel</SelectItem>
+                    <SelectItem value="netlify">Netlify</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="accountEmail" className="text-sm font-medium">Account Email</Label>
+                <Input
+                  id="accountEmail"
+                  type="email"
+                  value={formData.accountEmail}
+                  onChange={(e) => setFormData(prev => ({ ...prev, accountEmail: e.target.value }))}
+                  placeholder="account@example.com"
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="projectUrl" className="text-sm font-medium">Project URL</Label>
+                <Input
+                  id="projectUrl"
+                  type="url"
+                  value={formData.projectUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, projectUrl: e.target.value }))}
+                  placeholder="https://..."
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="accountNotes" className="text-sm font-medium">Notes</Label>
+                <Textarea
+                  id="accountNotes"
+                  value={formData.accountNotes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, accountNotes: e.target.value }))}
+                  placeholder="Any notes about this project location..."
+                  className="min-h-[60px] resize-none"
+                />
               </div>
             </div>
           </div>
