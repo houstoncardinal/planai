@@ -28,6 +28,7 @@ import PerformancePage from "@/pages/Performance";
 import SecurityPage from "@/pages/Security";
 import NotFound from "@/pages/NotFound";
 import Auth from "@/pages/Auth";
+import VoiceNotes from "@/pages/VoiceNotes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +76,7 @@ const App = () => (
                               <Route path="/code-review" element={<CodeReviewPage />} />
                               <Route path="/performance" element={<PerformancePage />} />
                               <Route path="/security" element={<SecurityPage />} />
+                              <Route path="/voice-notes" element={<VoiceNotes />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>
                           </div>

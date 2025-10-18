@@ -179,6 +179,9 @@ export type Database = {
       }
       projects: {
         Row: {
+          account_email: string | null
+          account_notes: string | null
+          account_platform: string | null
           budget: string | null
           category: string | null
           created_at: string
@@ -188,6 +191,7 @@ export type Database = {
           id: string
           priority: string | null
           progress: number | null
+          project_url: string | null
           status: string | null
           team: string[] | null
           technologies: string[] | null
@@ -197,6 +201,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_email?: string | null
+          account_notes?: string | null
+          account_platform?: string | null
           budget?: string | null
           category?: string | null
           created_at?: string
@@ -206,6 +213,7 @@ export type Database = {
           id?: string
           priority?: string | null
           progress?: number | null
+          project_url?: string | null
           status?: string | null
           team?: string[] | null
           technologies?: string[] | null
@@ -215,6 +223,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_email?: string | null
+          account_notes?: string | null
+          account_platform?: string | null
           budget?: string | null
           category?: string | null
           created_at?: string
@@ -224,6 +235,7 @@ export type Database = {
           id?: string
           priority?: string | null
           progress?: number | null
+          project_url?: string | null
           status?: string | null
           team?: string[] | null
           technologies?: string[] | null
@@ -286,6 +298,92 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tasks: {
+        Row: {
+          created_at: string
+          created_from_voice: boolean | null
+          description: string | null
+          due_date: string | null
+          id: string
+          original_note: string | null
+          priority: string | null
+          project_id: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_from_voice?: boolean | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          original_note?: string | null
+          priority?: string | null
+          project_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_from_voice?: boolean | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          original_note?: string | null
+          priority?: string | null
+          project_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_notes: {
+        Row: {
+          ai_analysis: Json | null
+          audio_url: string | null
+          created_at: string
+          id: string
+          processed: boolean | null
+          transcription: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          processed?: boolean | null
+          transcription: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          processed?: boolean | null
+          transcription?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

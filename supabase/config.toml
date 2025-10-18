@@ -2,3 +2,6 @@ project_id = "vhwlashhrcnmspsnzsqf"
 
 [functions.ai-chat]
 verify_jwt = false
+
+[functions.process-voice-note]
+verify_jwt = true
