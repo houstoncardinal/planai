@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAppStore } from "@/stores/appStore";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
 import { StepCard } from "@/components/StepCard";
 import { StepCreationWizard } from "@/components/StepCreationWizard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { Step, StepFormData } from "@/types";
 
 interface StepPlanningPanelProps {
@@ -31,38 +31,170 @@ interface StepPlanningPanelProps {
   onStepsChange?: (steps: Step[]) => void;
 }
 
-export function StepPlanningPanel({ projectId, steps }: StepPlanningPanelProps) {
+export function StepPlanningPanel({ projectId, steps: initialSteps, onStepsChange }: StepPlanningPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
   const [sortBy, setSortBy] = useState("created");
   const [viewMode, setViewMode] = useState("expanded");
-  const { addStep, updateStep, toggleStepCompletion, projects } = useAppStore();
-  const { toast } = useToast();
+  const [steps, setSteps] = useState<Step[]>(initialSteps);
+  const [project, setProject] = useState<any>(null);
 
-  const project = projects.find(p => p.id === projectId);
+  useEffect(() => {
+    setSteps(initialSteps);
+  }, [initialSteps]);
 
-  const handleAddStep = (stepData: StepFormData) => {
-    addStep(projectId, stepData);
-    toast({
-      title: "Step Created",
-      description: `"${stepData.title}" has been added to your project.`,
-    });
+  useEffect(() => {
+    loadProject();
+  }, [projectId]);
+
+  const loadProject = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setProject(data);
+      }
+    } catch (error) {
+      console.error('Error loading project:', error);
+    }
   };
 
-  const handleUpdateStep = (stepId: string, updates: Partial<Step>) => {
-    updateStep(projectId, stepId, updates);
+  const handleAddStep = async (stepData: StepFormData) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to add steps");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('steps')
+        .insert({
+          title: stepData.title,
+          description: stepData.description || '',
+          completed: false,
+          notes: stepData.notes || '',
+          learnings: stepData.learnings || [],
+          impact: stepData.impact || [],
+          project_id: projectId,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const newStep: Step = {
+          id: data.id,
+          title: data.title,
+          description: data.description || '',
+          completed: data.completed,
+          notes: data.notes || '',
+          learnings: data.learnings || [],
+          impact: data.impact || [],
+          projectId: data.project_id,
+          createdAt: data.created_at,
+          priority: stepData.priority || 'medium',
+          status: 'not_started',
+          estimatedHours: stepData.estimatedHours || 0,
+        };
+
+        setSteps(prev => [...prev, newStep]);
+        toast.success(`"${stepData.title}" has been added to your project.`);
+        
+        if (onStepsChange) {
+          onStepsChange([...steps, newStep]);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error adding step:', error);
+      toast.error(error.message || "Failed to add step");
+    }
   };
 
-  const handleToggleCompletion = (stepId: string) => {
-    const step = steps.find(s => s.id === stepId);
-    toggleStepCompletion(projectId, stepId);
-    
-    if (step) {
-      toast({
-        title: step.completed ? "Step Reopened" : "Step Completed! 🎉",
-        description: `"${step.title}" has been ${step.completed ? 'reopened' : 'marked as complete'}.`,
-      });
+  const handleUpdateStep = async (stepId: string, updates: Partial<Step>) => {
+    try {
+      const { error } = await supabase
+        .from('steps')
+        .update({
+          title: updates.title,
+          description: updates.description,
+          notes: updates.notes,
+          learnings: updates.learnings,
+          impact: updates.impact,
+        })
+        .eq('id', stepId);
+
+      if (error) throw error;
+
+      setSteps(prev => prev.map(step => 
+        step.id === stepId ? { ...step, ...updates } : step
+      ));
+
+      if (onStepsChange) {
+        const updatedSteps = steps.map(step => 
+          step.id === stepId ? { ...step, ...updates } : step
+        );
+        onStepsChange(updatedSteps);
+      }
+      
+      toast.success("Step updated successfully");
+    } catch (error: any) {
+      console.error('Error updating step:', error);
+      toast.error(error.message || "Failed to update step");
+    }
+  };
+
+  const handleToggleCompletion = async (stepId: string) => {
+    try {
+      const step = steps.find(s => s.id === stepId);
+      if (!step) return;
+
+      const newCompletedState = !step.completed;
+
+      const { error } = await supabase
+        .from('steps')
+        .update({
+          completed: newCompletedState,
+          completed_at: newCompletedState ? new Date().toISOString() : null,
+        })
+        .eq('id', stepId);
+
+      if (error) throw error;
+
+      setSteps(prev => prev.map(s => 
+        s.id === stepId 
+          ? { ...s, completed: newCompletedState, completedAt: newCompletedState ? new Date().toISOString() : undefined }
+          : s
+      ));
+
+      toast.success(
+        newCompletedState 
+          ? `"${step.title}" marked as complete! 🎉`
+          : `"${step.title}" reopened`
+      );
+
+      if (onStepsChange) {
+        const updatedSteps = steps.map(s => 
+          s.id === stepId 
+            ? { ...s, completed: newCompletedState, completedAt: newCompletedState ? new Date().toISOString() : undefined }
+            : s
+        );
+        onStepsChange(updatedSteps);
+      }
+    } catch (error: any) {
+      console.error('Error toggling step completion:', error);
+      toast.error(error.message || "Failed to update step");
     }
   };
 

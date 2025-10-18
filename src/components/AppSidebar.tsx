@@ -32,6 +32,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const navigationItems = [
   {
@@ -41,6 +43,14 @@ const navigationItems = [
     color: "text-blue-500",
     bgColor: "bg-blue-100",
     glow: "hover:shadow-blue-500/25"
+  },
+  {
+    title: "AI Agent",
+    href: "/ai-agent",
+    icon: Brain,
+    color: "text-green-500",
+    bgColor: "bg-green-100",
+    glow: "hover:shadow-green-500/25"
   },
   {
     title: "Projects",
@@ -108,14 +118,23 @@ const navigationItems = [
   }
 ];
 
+const adminNavigationItem = {
+  title: "Admin",
+  href: "/admin",
+  icon: Shield,
+  color: "text-red-500",
+  bgColor: "bg-red-100",
+  glow: "hover:shadow-red-500/25"
+};
+
 const quickActions = [
   {
-    title: "AI Assistant",
-    icon: Bot,
-    color: "text-blue-500",
-    bgColor: "bg-blue-100",
-    glow: "hover:shadow-blue-500/25",
-    href: "/ai-assistant"
+    title: "AI Agent",
+    icon: Brain,
+    color: "text-green-500",
+    bgColor: "bg-green-100",
+    glow: "hover:shadow-green-500/25",
+    href: "/ai-agent"
   },
   {
     title: "AI Chat",
@@ -192,6 +211,54 @@ const projectCategories = [
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { role } = useUserRole();
+  const [stats, setStats] = useState({
+    activeProjects: 0,
+    learnings: 0,
+    avgProgress: 0,
+    goals: 0
+  });
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Load projects
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('progress, status')
+        .eq('user_id', user.id);
+
+      // Load learnings
+      const { data: learnings } = await supabase
+        .from('learnings')
+        .select('id')
+        .eq('user_id', user.id);
+
+      // Load goals
+      const { data: goals } = await supabase
+        .from('goals')
+        .select('id')
+        .eq('user_id', user.id);
+
+      const activeProjects = projects?.filter(p => p.status === 'active' || p.status === 'in-progress' || p.status === 'planning').length || 0;
+      const avgProgress = projects?.length ? Math.round(projects.reduce((sum, p) => sum + (p.progress || 0), 0) / projects.length) : 0;
+
+      setStats({
+        activeProjects,
+        learnings: learnings?.length || 0,
+        avgProgress,
+        goals: goals?.length || 0
+      });
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -207,12 +274,14 @@ export function AppSidebar() {
     <div className="flex h-screen w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 overflow-hidden">
       {/* Header */}
       <div className="flex h-14 items-center border-b px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-semibold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            DevTracker
+        <div className="flex items-center">
+          <span 
+            className="font-semibold text-xl tracking-wide text-foreground"
+            style={{ 
+              fontFamily: 'Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif',
+            }}
+          >
+            Plan.AI
           </span>
         </div>
       </div>
@@ -232,16 +301,16 @@ export function AppSidebar() {
                     variant={isActive ? "secondary" : "ghost"}
                     className={`w-full justify-start gap-3 h-11 px-3 transition-all duration-300 group ${
                       isActive 
-                        ? `${item.bgColor} ${item.color} border-2 border-current/20 shadow-lg ${item.glow}` 
+                        ? `${item.bgColor} ${item.color} dark:bg-white dark:text-black border-2 border-current/20 shadow-lg ${item.glow}` 
                         : "hover:bg-muted/50 hover:scale-105"
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg ${item.bgColor} flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                    <div className={`w-8 h-8 rounded-lg ${item.bgColor} dark:bg-white/10 ${isActive ? "dark:bg-black/20" : ""} flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
                       isActive ? "shadow-md" : ""
                     }`}>
-                      <Icon className={`h-4 w-4 ${item.color} transition-all duration-300 group-hover:scale-110`} />
+                      <Icon className={`h-4 w-4 ${item.color} dark:text-white ${isActive ? "dark:text-black" : ""} transition-all duration-300 group-hover:scale-110`} />
                     </div>
-                    <span className="font-medium">{item.title}</span>
+                    <span className={`font-medium ${isActive ? "dark:text-black" : ""}`}>{item.title}</span>
                     {isActive && (
                       <div className="ml-auto w-2 h-2 rounded-full bg-current animate-pulse"></div>
                     )}
@@ -249,6 +318,30 @@ export function AppSidebar() {
                 </Link>
               );
             })}
+            
+            {/* Admin Link - Only visible to admins */}
+            {role === "admin" && (
+              <Link to={adminNavigationItem.href}>
+                <Button
+                  variant={location.pathname === adminNavigationItem.href ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 h-11 px-3 transition-all duration-300 group ${
+                    location.pathname === adminNavigationItem.href
+                      ? `${adminNavigationItem.bgColor} ${adminNavigationItem.color} dark:bg-white dark:text-black border-2 border-current/20 shadow-lg ${adminNavigationItem.glow}` 
+                      : "hover:bg-muted/50 hover:scale-105"
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg ${adminNavigationItem.bgColor} ${location.pathname === adminNavigationItem.href ? "dark:bg-black/20" : ""} flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                    location.pathname === adminNavigationItem.href ? "shadow-md" : ""
+                  }`}>
+                    <Shield className={`h-4 w-4 ${adminNavigationItem.color} ${location.pathname === adminNavigationItem.href ? "dark:text-black" : ""} transition-all duration-300 group-hover:scale-110`} />
+                  </div>
+                  <span className={`font-medium ${location.pathname === adminNavigationItem.href ? "dark:text-black" : ""}`}>{adminNavigationItem.title}</span>
+                  {location.pathname === adminNavigationItem.href && (
+                    <div className="ml-auto w-2 h-2 rounded-full bg-current animate-pulse"></div>
+                  )}
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -265,8 +358,8 @@ export function AppSidebar() {
                     className="h-16 flex-col gap-1 p-2 hover:scale-105 transition-all duration-300 group"
                     onClick={() => navigate(action.href)}
                   >
-                    <div className={`w-8 h-8 rounded-lg ${action.bgColor} flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${action.glow}`}>
-                      <Icon className={`h-4 w-4 ${action.color} transition-all duration-300 group-hover:scale-110`} />
+                    <div className={`w-8 h-8 rounded-lg ${action.bgColor} dark:bg-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${action.glow}`}>
+                      <Icon className={`h-4 w-4 ${action.color} dark:text-white transition-all duration-300 group-hover:scale-110`} />
                     </div>
                     <span className="text-xs font-medium">{action.title}</span>
                   </Button>
@@ -288,8 +381,8 @@ export function AppSidebar() {
                   className="w-full justify-between h-10 px-3 hover:scale-105 transition-all duration-300 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-md ${category.bgColor} flex items-center justify-center transition-all duration-300 group-hover:scale-110`}>
-                      <Icon className={`h-3 w-3 ${category.color}`} />
+                    <div className={`w-6 h-6 rounded-md ${category.bgColor} dark:bg-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110`}>
+                      <Icon className={`h-3 w-3 ${category.color} dark:text-white`} />
                     </div>
                     <span className="text-sm font-medium">{category.title}</span>
                   </div>
@@ -329,21 +422,21 @@ export function AppSidebar() {
           <div className="space-y-2">
             <h3 className="px-2 text-sm font-medium text-muted-foreground">Stats</h3>
             <div className="grid grid-cols-2 gap-2 px-2">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-                <div className="text-lg font-bold text-blue-600">24</div>
-                <div className="text-xs text-blue-600/80">Active Projects</div>
+              <div className="p-3 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-500/20 dark:to-blue-600/20 border border-blue-200 dark:border-blue-500/30">
+                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.activeProjects}</div>
+                <div className="text-xs text-blue-600/80 dark:text-blue-400/80">Active Projects</div>
               </div>
-              <div className="p-3 rounded-lg bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
-                <div className="text-lg font-bold text-green-600">156</div>
-                <div className="text-xs text-green-600/80">Learnings</div>
+              <div className="p-3 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-500/20 dark:to-green-600/20 border border-green-200 dark:border-green-500/30">
+                <div className="text-lg font-bold text-green-600 dark:text-green-400">{stats.learnings}</div>
+                <div className="text-xs text-green-600/80 dark:text-green-400/80">Learnings</div>
               </div>
-              <div className="p-3 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
-                <div className="text-lg font-bold text-purple-600">89%</div>
-                <div className="text-xs text-purple-600/80">Avg Progress</div>
+              <div className="p-3 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-500/20 dark:to-purple-600/20 border border-purple-200 dark:border-purple-500/30">
+                <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{stats.avgProgress}%</div>
+                <div className="text-xs text-purple-600/80 dark:text-purple-400/80">Avg Progress</div>
               </div>
-              <div className="p-3 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200">
-                <div className="text-lg font-bold text-orange-600">12</div>
-                <div className="text-xs text-orange-600/80">Goals Set</div>
+              <div className="p-3 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-500/20 dark:to-orange-600/20 border border-orange-200 dark:border-orange-500/30">
+                <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{stats.goals}</div>
+                <div className="text-xs text-orange-600/80 dark:text-orange-400/80">Goals Set</div>
               </div>
             </div>
           </div>

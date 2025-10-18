@@ -10,6 +10,8 @@ import { MobileNav } from "@/components/MobileNav";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { TutorialProvider, TutorialOverlay } from "@/components/TutorialSystem";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Pages
 import Index from "@/pages/Index";
@@ -29,6 +31,9 @@ import SecurityPage from "@/pages/Security";
 import NotFound from "@/pages/NotFound";
 import Auth from "@/pages/Auth";
 import VoiceNotes from "@/pages/VoiceNotes";
+import AuthDemo from "@/pages/AuthDemo";
+import AIAgent from "@/pages/AIAgent";
+import Admin from "@/pages/Admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,15 +45,17 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <ErrorBoundary>
-    <TutorialProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <ThemeProvider defaultTheme="system" storageKey="planai-ui-theme">
+      <TutorialProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
             <SidebarProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth-demo" element={<AuthDemo />} />
                 <Route path="*" element={
                   <ProtectedRoute>
                     <div className="flex min-h-screen w-full bg-background">
@@ -56,13 +63,15 @@ const App = () => (
                         <AppSidebar />
                       </div>
                       <div className="flex-1 flex flex-col w-full min-w-0">
-                        <header className="hidden lg:flex h-12 items-center border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+                        <header className="hidden lg:flex h-12 items-center justify-between border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
                           <SidebarTrigger />
+                          <ThemeToggle />
                         </header>
                         <main className="flex-1 w-full pt-14 pb-20 lg:pt-0 lg:pb-0 overflow-x-hidden">
                           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                             <Routes>
                               <Route path="/" element={<Index />} />
+                              <Route path="/ai-agent" element={<AIAgent />} />
                               <Route path="/projects" element={<Projects />} />
                               <Route path="/projects/:id" element={<ProjectDetail />} />
                               <Route path="/learnings" element={<Learnings />} />
@@ -77,6 +86,7 @@ const App = () => (
                               <Route path="/performance" element={<PerformancePage />} />
                               <Route path="/security" element={<SecurityPage />} />
                               <Route path="/voice-notes" element={<VoiceNotes />} />
+                              <Route path="/admin" element={<Admin />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>
                           </div>
@@ -89,10 +99,11 @@ const App = () => (
                 } />
               </Routes>
             </SidebarProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </TutorialProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </TutorialProvider>
+    </ThemeProvider>
   </ErrorBoundary>
 );
 

@@ -276,7 +276,7 @@ const ProjectDetail = () => {
           <StepPlanningPanel
             projectId={project.id}
             steps={steps}
-            onStepsChange={() => {}} // Steps are managed by the store
+            onStepsChange={loadProjectData}
           />
         </TabsContent>
 

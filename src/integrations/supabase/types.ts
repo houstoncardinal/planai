@@ -189,29 +189,73 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
-          display_name: string | null
+          email: string | null
+          full_name: string | null
           id: string
+          role: string | null
           updated_at: string
-          user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
-          display_name?: string | null
-          id?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
           updated_at?: string
-          user_id: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
-          display_name?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
+      }
+      admin_activity_log: {
+        Row: {
+          id: string
+          admin_id: string | null
+          action: string
+          target_type: string | null
+          target_id: string | null
+          details: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          admin_id?: string | null
+          action: string
+          target_type?: string | null
+          target_id?: string | null
+          details?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          admin_id?: string | null
+          action?: string
+          target_type?: string | null
+          target_id?: string | null
+          details?: Json | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_activity_log_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
@@ -423,10 +467,29 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_user_management: {
+        Row: {
+          id: string
+          email: string | null
+          full_name: string | null
+          role: string | null
+          created_at: string
+          updated_at: string
+          project_count: number | null
+          task_count: number | null
+        }
+      }
     }
     Functions: {
-      [_ in never]: never
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_target_type?: string
+          p_target_id?: string
+          p_details?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
