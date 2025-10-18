@@ -25,11 +25,22 @@ const Index = () => {
 
   const loadProjects = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      setLoading(true);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("Auth error:", userError);
         navigate('/auth');
         return;
       }
+
+      if (!user) {
+        console.log("No user found, redirecting to auth");
+        navigate('/auth');
+        return;
+      }
+
+      console.log("Loading projects for user:", user.id);
 
       const { data, error } = await supabase
         .from('projects')
@@ -37,7 +48,12 @@ const Index = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Projects fetch error:", error);
+        throw error;
+      }
+      
+      console.log("Loaded projects:", data?.length || 0);
       
       // Format data to match UI expectations
       const formattedData = (data || []).map(p => ({
@@ -62,9 +78,10 @@ const Index = () => {
       
       setProjects(formattedData);
     } catch (error: any) {
+      console.error("Error in loadProjects:", error);
       toast({
         title: "Error loading projects",
-        description: error.message,
+        description: error.message || "Failed to load projects. Please try again.",
         variant: "destructive",
       });
     } finally {
