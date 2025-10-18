@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Filter, Lightbulb, Sparkles, Target, TrendingUp } from "lucide-react";
+import { Plus, Search, Filter, Lightbulb, Sparkles, Target, TrendingUp, Loader2 } from "lucide-react";
 import { IdeaGenerator } from "@/components/IdeaGenerator";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Idea {
   id: string;
@@ -29,26 +32,125 @@ const quickSuggestions = [
 ];
 
 export default function Ideas() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("generator");
 
-  const addIdea = () => {
-    if (!title.trim() || !category) return;
-    
-    setIdeas((prev) => [
-      { id: crypto.randomUUID(), title: title.trim(), category, createdAt: new Date().toISOString() },
-      ...prev,
-    ]);
-    setTitle("");
-    setCategory("");
+  useEffect(() => {
+    loadIdeas();
+  }, []);
+
+  const loadIdeas = async () => {
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('ideas')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedIdeas = (data || []).map((idea: any) => ({
+        id: idea.id,
+        title: idea.title,
+        description: idea.description,
+        category: idea.category,
+        status: idea.status,
+        priority: idea.priority,
+        createdAt: idea.created_at
+      }));
+
+      setIdeas(formattedIdeas);
+    } catch (error: any) {
+      toast({
+        title: "Error loading ideas",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const addQuickSuggestions = () => {
-    setIdeas((prev) => [...quickSuggestions.map((q) => ({ ...q, id: crypto.randomUUID() })), ...prev]);
+  const addIdea = async () => {
+    if (!title.trim() || !category) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('ideas')
+        .insert({
+          user_id: user.id,
+          title: title.trim(),
+          category,
+          status: 'concept',
+          priority: 'medium'
+        });
+
+      if (error) throw error;
+
+      await loadIdeas();
+      setTitle("");
+      setCategory("");
+      toast({
+        title: "Idea added",
+        description: "Your idea has been saved successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error adding idea",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const addQuickSuggestions = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const newIdeas = quickSuggestions.map(s => ({
+        user_id: user.id,
+        title: s.title,
+        category: s.category,
+        status: 'concept' as const,
+        priority: 'medium' as const
+      }));
+
+      const { error } = await supabase
+        .from('ideas')
+        .insert(newIdeas);
+
+      if (error) throw error;
+
+      await loadIdeas();
+      toast({
+        title: "Suggestions added",
+        description: "All quick suggestions have been added to your ideas.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error adding suggestions",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredIdeas = useMemo(() => {
@@ -60,6 +162,14 @@ export default function Ideas() {
   }, [ideas, searchQuery, filterCategory]);
 
   const categories = [...new Set(ideas.map((i) => i.category))];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full overflow-x-hidden">
