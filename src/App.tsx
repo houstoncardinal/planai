@@ -34,6 +34,7 @@ import VoiceNotes from "@/pages/VoiceNotes";
 import AuthDemo from "@/pages/AuthDemo";
 import AIAgent from "@/pages/AIAgent";
 import Admin from "@/pages/Admin";
+import Landing from "@/pages/Landing";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +55,7 @@ const App = () => (
             <BrowserRouter>
             <SidebarProvider>
               <Routes>
+                <Route path="/landing" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth-demo" element={<AuthDemo />} />
                 <Route path="*" element={

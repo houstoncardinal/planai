@@ -98,19 +98,25 @@ export function MobileNav() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-lg">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div>
               <h1 
-                className="text-lg font-bold text-foreground"
+                className="text-xl font-bold tracking-tight"
                 style={{ 
-                  fontFamily: 'Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif',
+                  fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #14B8A6 100%)',
+                  backgroundSize: '200% 100%',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  letterSpacing: '-0.02em',
                 }}
               >
                 Plan.AI
               </h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">AI-Powered Project Platform</p>
             </div>
           </div>
           
@@ -120,20 +126,24 @@ export function MobileNav() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 bg-white p-0 border-l border-gray-200">
+            <SheetContent side="right" className="w-80 bg-background p-0 border-l border-border">
               <div className="flex flex-col h-full">
                 {/* Clean Header with User Profile */}
-                <div className="border-b border-gray-200 bg-white">
-                  <div className="px-6 pt-6 pb-4">
+                <div className="border-b border-border bg-background">
+                  <div className="px-4 pt-4 pb-3">
                     {/* Logo */}
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
-                        <Sparkles className="h-5 w-5 text-white" />
-                      </div>
+                    <div className="flex items-center gap-2 mb-4">
                       <h2 
-                        className="text-2xl font-bold text-black"
+                        className="text-2xl font-bold tracking-tight"
                         style={{ 
-                          fontFamily: 'Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif',
+                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                          fontWeight: 800,
+                          background: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #14B8A6 100%)',
+                          backgroundSize: '200% 100%',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                          letterSpacing: '-0.02em',
                         }}
                       >
                         Plan.AI
@@ -146,32 +156,31 @@ export function MobileNav() {
                         setIsOpen(false);
                         navigate('/settings');
                       }}
-                      className="w-full bg-gray-50 hover:bg-gray-100 rounded-xl p-4 border border-gray-200 transition-all duration-200 text-left group"
+                      className="w-full bg-muted/50 hover:bg-muted rounded-lg p-3 border border-border transition-all duration-200 text-left group"
                     >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12 border-2 border-gray-300 group-hover:border-black transition-colors">
-                          <AvatarFallback className="bg-black text-white font-bold text-base">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-10 w-10 border-2 border-border group-hover:border-primary transition-colors">
+                          <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
                             {getInitials(userName)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-gray-900 text-base truncate group-hover:text-black">
+                          <h3 className="font-semibold text-foreground text-sm truncate">
                             {userName}
                           </h3>
-                          <p className="text-xs text-gray-600 truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             {userEmail}
                           </p>
                         </div>
-                        <Settings className="h-4 w-4 text-gray-400 group-hover:text-black transition-colors flex-shrink-0" />
+                        <Settings className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
                       </div>
                     </button>
                   </div>
                 </div>
 
                 {/* Navigation Section */}
-                <div className="flex-1 overflow-y-auto py-4 px-4">
-                  
-                  <nav className="space-y-1">
+                <div className="flex-1 overflow-y-auto py-2 px-3">
+                  <nav className="space-y-0.5">
                     {navItems.map((item) => (
                       <NavLink
                         key={item.title}
@@ -179,93 +188,88 @@ export function MobileNav() {
                         end={item.url === "/"}
                         onClick={() => setIsOpen(false)}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group ${
+                          `flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
                             isActive
-                              ? `bg-gradient-to-r ${item.bgColor} ${item.color} font-semibold shadow-lg border-l-4 border-current`
-                              : "text-gray-700 hover:text-gray-900 hover:bg-white/80 hover:shadow-md hover:translate-x-1"
+                              ? "bg-primary/10 text-primary font-semibold"
+                              : "text-foreground hover:bg-muted"
                           }`
                         }
                       >
-                        <div className={`w-11 h-11 rounded-xl ${item.bgColor} flex items-center justify-center transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:scale-110`}>
-                          <item.icon className={`h-5 w-5 ${item.color}`} />
+                        <div className={`w-8 h-8 rounded-lg ${item.bgColor} dark:bg-primary/20 flex items-center justify-center`}>
+                          <item.icon className={`h-4 w-4 ${item.color} dark:text-primary`} />
                         </div>
-                        <span className="text-sm font-semibold">{item.title}</span>
+                        <span className="text-sm">{item.title}</span>
                       </NavLink>
                     ))}
                   </nav>
                 </div>
 
-                <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+                <Separator />
                 
                 {/* Theme Selector */}
-                <div className="px-4 py-3">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
-                    Theme
-                  </h3>
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="px-3 py-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => setTheme("light")}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                      className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
                         theme === "light"
-                          ? "border-black bg-gray-50 shadow-md"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <Sun className={`h-5 w-5 ${theme === "light" ? "text-black" : "text-gray-600"}`} />
-                      <span className={`text-xs font-medium ${theme === "light" ? "text-black" : "text-gray-600"}`}>
+                      <Sun className={`h-4 w-4 ${theme === "light" ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs ${theme === "light" ? "text-primary font-medium" : "text-muted-foreground"}`}>
                         Light
                       </span>
                     </button>
                     
                     <button
                       onClick={() => setTheme("dark")}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                      className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
                         theme === "dark"
-                          ? "border-black bg-gray-50 shadow-md"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <Moon className={`h-5 w-5 ${theme === "dark" ? "text-black" : "text-gray-600"}`} />
-                      <span className={`text-xs font-medium ${theme === "dark" ? "text-black" : "text-gray-600"}`}>
+                      <Moon className={`h-4 w-4 ${theme === "dark" ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs ${theme === "dark" ? "text-primary font-medium" : "text-muted-foreground"}`}>
                         Dark
                       </span>
                     </button>
                     
                     <button
                       onClick={() => setTheme("system")}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                      className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
                         theme === "system"
-                          ? "border-black bg-gray-50 shadow-md"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
-                      <Monitor className={`h-5 w-5 ${theme === "system" ? "text-black" : "text-gray-600"}`} />
-                      <span className={`text-xs font-medium ${theme === "system" ? "text-black" : "text-gray-600"}`}>
+                      <Monitor className={`h-4 w-4 ${theme === "system" ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs ${theme === "system" ? "text-primary font-medium" : "text-muted-foreground"}`}>
                         System
                       </span>
                     </button>
                   </div>
                 </div>
 
-                <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+                <Separator />
                 
                 {/* Bottom Section with Settings & Sign Out */}
-                <div className="p-4 space-y-2 bg-gradient-to-t from-slate-100 to-transparent">
+                <div className="p-3 space-y-1">
                   <NavLink
                     to="/settings"
                     onClick={() => setIsOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group ${
+                      `flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
                         isActive
-                          ? "bg-gradient-to-r bg-gray-100 text-gray-700 font-semibold shadow-lg border-l-4 border-gray-500"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-white/80 hover:shadow-md hover:translate-x-1"
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-foreground hover:bg-muted"
                       }`
                     }
                   >
-                    <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300">
-                      <Settings className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <span className="text-sm font-semibold">Settings</span>
+                    <Settings className="h-4 w-4" />
+                    <span className="text-sm">Settings</span>
                   </NavLink>
                   
                   <Button
@@ -274,26 +278,11 @@ export function MobileNav() {
                       handleLogout();
                     }}
                     variant="ghost"
-                    className="w-full justify-start gap-3 px-4 py-3.5 h-auto rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 hover:shadow-lg hover:translate-x-1 transition-all duration-300 group"
+                    className="w-full justify-start gap-2 px-3 py-2 h-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300">
-                      <LogOut className="h-5 w-5" />
-                    </div>
-                    <span className="text-sm font-semibold">Sign Out</span>
+                    <LogOut className="h-4 w-4" />
+                    <span className="text-sm">Sign Out</span>
                   </Button>
-
-                  {/* Footer Info */}
-                  <div className="pt-3 mt-3 border-t border-gray-200">
-                    <div className="flex items-center justify-between px-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
-                        <span className="text-xs font-medium text-gray-600">All systems operational</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-center text-gray-500 mt-2">
-                      Powered by Claude AI
-                    </p>
-                  </div>
                 </div>
               </div>
             </SheetContent>
@@ -302,7 +291,7 @@ export function MobileNav() {
       </div>
 
       {/* Mobile Bottom Bar - Simplified to 4 items */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-inset-bottom">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-inset-bottom">
         <div className="flex items-center justify-around px-2 py-2">
           {bottomNavItems.map((item) => {
             const isActiveItem = isActive(item.url);
@@ -313,11 +302,11 @@ export function MobileNav() {
               return (
                 <Sheet key={item.title} open={isOpen} onOpenChange={setIsOpen}>
                   <SheetTrigger asChild>
-                    <button className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50">
-                      <div className={`w-10 h-10 rounded-xl ${item.bgColor} flex items-center justify-center transition-all duration-200`}>
-                        <Icon className={`h-5 w-5 ${item.color}`} />
+                    <button className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-muted">
+                      <div className={`w-10 h-10 rounded-xl ${item.bgColor} dark:bg-primary/20 flex items-center justify-center transition-all duration-200`}>
+                        <Icon className={`h-5 w-5 ${item.color} dark:text-primary`} />
                       </div>
-                      <span className="text-xs font-medium text-gray-600">{item.title}</span>
+                      <span className="text-xs font-medium text-muted-foreground">{item.title}</span>
                     </button>
                   </SheetTrigger>
                 </Sheet>
@@ -329,15 +318,15 @@ export function MobileNav() {
                 key={item.title}
                 onClick={() => navigate(item.url)}
                 className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${
-                  isActiveItem ? 'bg-gray-50' : 'hover:bg-gray-50'
+                  isActiveItem ? 'bg-muted' : 'hover:bg-muted'
                 }`}
               >
-                <div className={`w-10 h-10 rounded-xl ${item.bgColor} flex items-center justify-center transition-all duration-200 ${
+                <div className={`w-10 h-10 rounded-xl ${item.bgColor} dark:bg-primary/20 flex items-center justify-center transition-all duration-200 ${
                   isActiveItem ? 'shadow-md scale-110' : ''
                 }`}>
-                  <Icon className={`h-5 w-5 ${item.color} ${isActiveItem ? 'scale-110' : ''}`} />
+                  <Icon className={`h-5 w-5 ${item.color} dark:text-primary ${isActiveItem ? 'scale-110' : ''}`} />
                 </div>
-                <span className={`text-xs font-medium ${isActiveItem ? item.color : 'text-gray-600'}`}>
+                <span className={`text-xs font-medium ${isActiveItem ? item.color + ' dark:text-primary' : 'text-muted-foreground'}`}>
                   {item.title}
                 </span>
               </button>

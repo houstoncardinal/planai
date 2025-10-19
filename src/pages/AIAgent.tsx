@@ -371,9 +371,40 @@ export default function AIAgent() {
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 hover:bg-green-500/10"
-                            onClick={() => {
-                              const utterance = new SpeechSynthesisUtterance(message.content);
-                              speechSynthesis.speak(utterance);
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(
+                                  `https://api.elevenlabs.io/v1/text-to-speech/${import.meta.env.VITE_ELEVENLABS_AGENT_ID}`,
+                                  {
+                                    method: 'POST',
+                                    headers: {
+                                      'Accept': 'audio/mpeg',
+                                      'Content-Type': 'application/json',
+                                      'xi-api-key': import.meta.env.VITE_ELEVENLABS_API_KEY,
+                                    },
+                                    body: JSON.stringify({
+                                      text: message.content,
+                                      model_id: 'eleven_monolingual_v1',
+                                      voice_settings: {
+                                        stability: 0.5,
+                                        similarity_boost: 0.5,
+                                      },
+                                    }),
+                                  }
+                                );
+
+                                if (!response.ok) {
+                                  throw new Error('Failed to generate speech');
+                                }
+
+                                const audioBlob = await response.blob();
+                                const audioUrl = URL.createObjectURL(audioBlob);
+                                const audio = new Audio(audioUrl);
+                                audio.play();
+                              } catch (error) {
+                                console.error('Error playing audio:', error);
+                                toast.error('Failed to play audio');
+                              }
                             }}
                           >
                             <Volume2 className="h-3 w-3 text-green-500" />

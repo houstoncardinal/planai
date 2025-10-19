@@ -120,19 +120,42 @@ export default function VoiceNotes() {
         messages: [
           {
             role: 'system',
-            content: `You are an intelligent task and project analyzer. Analyze the user's voice note and determine if it's a task or project. Extract key information and return a JSON object with this structure:
+            content: `You are an advanced project and task analyzer. Analyze voice notes and extract ALL possible information to create comprehensive projects or tasks.
+
+Return a JSON object with this EXACT structure:
 {
   "type": "task" or "project",
-  "title": "concise title",
-  "description": "detailed description",
+  "title": "concise, clear title",
+  "description": "detailed description with all context",
   "priority": "low", "medium", or "high",
-  "category": "relevant category",
-  "due_date": "YYYY-MM-DD or null",
-  "tasks": ["task1", "task2"] (only for projects),
-  "tags": ["tag1", "tag2"]
+  "category": "web-dev", "mobile-dev", "ai-ml", "backend", "frontend", "full-stack", "devops", or "general",
+  "status": "planning", "in-progress", "review", or "completed",
+  "due_date": "YYYY-MM-DD" (extract from phrases like "by Friday", "next week", "in 3 days") or null,
+  "estimated_completion": "YYYY-MM-DD" (if mentioned) or null,
+  "budget": "amount" (extract any budget/cost mentions) or null,
+  "progress": 0-100 (if mentioned, otherwise 0),
+  "technologies": ["tech1", "tech2"] (extract any technologies, frameworks, languages mentioned),
+  "team": ["person1", "person2"] (extract any team member names mentioned),
+  "milestones": [
+    {"title": "milestone1", "description": "details", "due_date": "YYYY-MM-DD"},
+    {"title": "milestone2", "description": "details", "due_date": "YYYY-MM-DD"}
+  ],
+  "tasks": [
+    {"title": "task1", "description": "details", "priority": "high/medium/low", "due_date": "YYYY-MM-DD"},
+    {"title": "task2", "description": "details", "priority": "high/medium/low", "due_date": "YYYY-MM-DD"}
+  ],
+  "tags": ["tag1", "tag2"],
+  "notes": "any additional context or notes"
 }
 
-Be intelligent about extracting dates, priorities, and breaking down complex requests into actionable items.`
+Be EXTREMELY intelligent about:
+- Extracting dates from natural language ("next Monday", "in 2 weeks", "by end of month")
+- Identifying technologies and frameworks mentioned
+- Breaking down complex projects into logical milestones and tasks
+- Inferring priorities from urgency words ("urgent", "ASAP", "when you can")
+- Extracting budget information from any cost mentions
+- Identifying team members or stakeholders mentioned
+- Creating realistic timelines and dependencies`
           },
           {
             role: 'user',
@@ -140,6 +163,7 @@ Be intelligent about extracting dates, priorities, and breaking down complex req
           }
         ],
         temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
@@ -197,10 +221,9 @@ Be intelligent about extracting dates, priorities, and breaking down complex req
             user_id: user.id,
             title: analysis.title,
             description: analysis.description,
-            priority: analysis.priority,
+            priority: analysis.priority || 'medium',
             due_date: analysis.due_date,
-            status: 'pending',
-            tags: analysis.tags || []
+            status: analysis.status || 'pending'
           });
 
         if (taskError) throw taskError;
@@ -210,39 +233,92 @@ Be intelligent about extracting dates, priorities, and breaking down complex req
           description: `"${analysis.title}" has been added to your tasks.`,
         });
       } else if (analysis.type === 'project') {
-        // Create project
+        // Create comprehensive project with all extracted data
+        const projectData: any = {
+          user_id: user.id,
+          title: analysis.title,
+          description: analysis.description,
+          category: analysis.category || 'general',
+          priority: analysis.priority || 'medium',
+          status: analysis.status || 'planning',
+          progress: analysis.progress || 0,
+        };
+
+        // Add optional fields if they exist
+        if (analysis.due_date) projectData.due_date = analysis.due_date;
+        if (analysis.estimated_completion) projectData.estimated_completion = analysis.estimated_completion;
+        if (analysis.budget) projectData.budget = analysis.budget;
+        if (analysis.technologies && analysis.technologies.length > 0) {
+          projectData.technologies = analysis.technologies;
+        }
+        if (analysis.team && analysis.team.length > 0) {
+          projectData.team = analysis.team;
+        }
+
         const { data: project, error: projectError } = await supabase
           .from('projects')
-          .insert({
-            user_id: user.id,
-            title: analysis.title,
-            description: analysis.description,
-            category: analysis.category || 'general',
-            priority: analysis.priority,
-            status: 'planning',
-            progress: 0
-          })
+          .insert(projectData)
           .select()
           .single();
 
         if (projectError) throw projectError;
 
-        // Create tasks for the project if any
-        if (analysis.tasks && analysis.tasks.length > 0 && project) {
-          const tasks = analysis.tasks.map((taskTitle: string) => ({
-            user_id: user.id,
-            project_id: project.id,
-            title: taskTitle,
-            status: 'pending',
-            priority: 'medium'
-          }));
+        let tasksCreated = 0;
+        let milestonesCreated = 0;
 
-          await supabase.from('tasks').insert(tasks);
+        // Create milestones if any
+        if (analysis.milestones && analysis.milestones.length > 0 && project) {
+          for (const milestone of analysis.milestones) {
+            const { error: milestoneError } = await supabase
+              .from('milestones')
+              .insert({
+                project_id: project.id,
+                title: milestone.title,
+                description: milestone.description || '',
+                due_date: milestone.due_date,
+                status: 'pending'
+              });
+            
+            if (!milestoneError) milestonesCreated++;
+          }
+        }
+
+        // Create detailed tasks for the project
+        if (analysis.tasks && analysis.tasks.length > 0 && project) {
+          for (const task of analysis.tasks) {
+            const taskData: any = {
+              user_id: user.id,
+              project_id: project.id,
+              title: typeof task === 'string' ? task : task.title,
+              status: 'pending',
+              priority: typeof task === 'object' ? (task.priority || 'medium') : 'medium'
+            };
+
+            if (typeof task === 'object') {
+              if (task.description) taskData.description = task.description;
+              if (task.due_date) taskData.due_date = task.due_date;
+            }
+
+            const { error: taskError } = await supabase.from('tasks').insert(taskData);
+            if (!taskError) tasksCreated++;
+          }
+        }
+
+        // Create a goal for the project if it has a clear objective
+        if (analysis.due_date) {
+          await supabase.from('goals').insert({
+            user_id: user.id,
+            title: `Complete: ${analysis.title}`,
+            description: `Project goal: ${analysis.description}`,
+            target_date: analysis.due_date,
+            status: 'in-progress',
+            priority: analysis.priority || 'medium'
+          });
         }
 
         toast({
-          title: "✅ Project Created!",
-          description: `"${analysis.title}" with ${analysis.tasks?.length || 0} tasks has been added.`,
+          title: "✅ Project Created Successfully!",
+          description: `"${analysis.title}" with ${tasksCreated} tasks and ${milestonesCreated} milestones has been created.`,
         });
       }
 

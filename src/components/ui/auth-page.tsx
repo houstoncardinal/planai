@@ -168,21 +168,23 @@ export function AuthPage() {
 				<div className="from-black absolute inset-0 z-10 bg-gradient-to-t to-transparent" />
 				<div className="z-10 flex items-center">
 					<motion.h1 
-						className="text-3xl font-semibold tracking-wide relative"
+						className="text-5xl font-bold tracking-tight relative"
 						style={{ 
-							fontFamily: 'Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif',
-							background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 25%, #ffffff 50%, #f5f5f5 75%, #ffffff 100%)',
+							fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+							fontWeight: 800,
+							background: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #14B8A6 100%)',
 							backgroundSize: '200% 100%',
 							WebkitBackgroundClip: 'text',
 							WebkitTextFillColor: 'transparent',
 							backgroundClip: 'text',
-							filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.3)) drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))',
+							filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.5)) drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3))',
+							letterSpacing: '-0.02em',
 						}}
 						animate={{
 							backgroundPosition: ['0% 0%', '100% 0%', '0% 0%'],
 						}}
 						transition={{
-							duration: 8,
+							duration: 6,
 							repeat: Infinity,
 							ease: 'linear',
 						}}
@@ -215,29 +217,31 @@ export function AuthPage() {
 					<div className="bg-[radial-gradient(50%_50%_at_50%_50%,rgba(59,130,246,0.15)_0,rgba(59,130,246,0.05)_80%,transparent_100%)] absolute top-0 right-0 h-320 w-60 -translate-y-87.5 rounded-full" />
 				</div>
 				<Button variant="ghost" className="absolute top-7 left-5 text-slate-300 hover:text-white hover:bg-slate-800" asChild>
-					<a href="#">
+					<a href="/landing">
 						<ChevronLeftIcon className='size-4 me-2' />
 						Home
 					</a>
 				</Button>
 				<div className="mx-auto space-y-4 sm:w-sm">
-					<div className="flex items-center lg:hidden">
+					<div className="flex items-center lg:hidden mb-6">
 						<motion.h1 
-							className="text-2xl font-semibold tracking-wide relative"
+							className="text-4xl font-bold tracking-tight relative"
 							style={{ 
-								fontFamily: 'Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif',
-								background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 25%, #ffffff 50%, #f5f5f5 75%, #ffffff 100%)',
+								fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+								fontWeight: 800,
+								background: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #14B8A6 100%)',
 								backgroundSize: '200% 100%',
 								WebkitBackgroundClip: 'text',
 								WebkitTextFillColor: 'transparent',
 								backgroundClip: 'text',
-								filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.3)) drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))',
+								filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.5)) drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3))',
+								letterSpacing: '-0.02em',
 							}}
 							animate={{
 								backgroundPosition: ['0% 0%', '100% 0%', '0% 0%'],
 							}}
 							transition={{
-								duration: 8,
+								duration: 6,
 								repeat: Infinity,
 								ease: 'linear',
 							}}
@@ -245,28 +249,28 @@ export function AuthPage() {
 							Plan.AI
 						</motion.h1>
 					</div>
-					<div className="flex flex-col space-y-1">
-						<h1 className="font-heading text-2xl font-bold tracking-wide text-white">
-							Welcome to Plan.AI
+					<div className="flex flex-col space-y-2">
+						<h1 className="font-heading text-3xl font-bold tracking-tight text-white">
+							Welcome Back
 						</h1>
-						<p className="text-slate-400 text-base">
-							Your intelligent partner in software development planning and execution.
+						<p className="text-slate-400 text-base leading-relaxed">
+							Sign in to your account or create a new one to get started with AI-powered project management.
 						</p>
 					</div>
 					<div className="space-y-2">
 						<Button 
 							type="button" 
 							size="lg" 
-							className="w-full bg-white hover:bg-gray-100 text-slate-900 shadow-lg hover:shadow-xl transition-all"
+							className="w-full bg-white hover:bg-gray-50 text-slate-900 shadow-lg hover:shadow-xl transition-all font-semibold border-2 border-gray-200"
 							onClick={handleGoogleAuth}
 							disabled={isLoading}
 						>
 							{isLoading ? (
-								<Loader2 className="size-4 me-2 animate-spin" />
+								<Loader2 className="size-5 me-2 animate-spin text-slate-900" />
 							) : (
-								<GoogleIcon className='size-4 me-2' />
+								<GoogleIcon className='size-5 me-2 text-slate-900' />
 							)}
-							Continue with Google
+							<span className="text-slate-900">Continue with Google</span>
 						</Button>
 						<Button 
 							type="button" 
