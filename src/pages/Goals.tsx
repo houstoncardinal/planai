@@ -101,7 +101,7 @@ export default function Goals() {
           target_date: date || null,
           progress: 0,
           user_id: user.id,
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -116,8 +116,8 @@ export default function Goals() {
 
   async function updateProgress(id: string, value: number) {
     try {
-      const { error } = await supabase
-        .from('goals')
+      const { error } = await (supabase
+        .from('goals') as any)
         .update({ progress: value })
         .eq('id', id);
 
@@ -148,8 +148,8 @@ export default function Goals() {
 
   async function completeGoal(id: string) {
     try {
-      const { error } = await supabase
-        .from('goals')
+      const { error } = await (supabase
+        .from('goals') as any)
         .update({ progress: 100 })
         .eq('id', id);
 

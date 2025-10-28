@@ -207,7 +207,7 @@ Be EXTREMELY intelligent about:
           transcription,
           ai_analysis: analysis,
           processed: true
-        })
+        } as any)
         .select()
         .single();
 
@@ -224,7 +224,7 @@ Be EXTREMELY intelligent about:
             priority: analysis.priority || 'medium',
             due_date: analysis.due_date,
             status: analysis.status || 'pending'
-          });
+          } as any);
 
         if (taskError) throw taskError;
 
@@ -272,12 +272,12 @@ Be EXTREMELY intelligent about:
             const { error: milestoneError } = await supabase
               .from('milestones')
               .insert({
-                project_id: project.id,
+                project_id: (project as any).id,
                 title: milestone.title,
                 description: milestone.description || '',
                 due_date: milestone.due_date,
                 status: 'pending'
-              });
+              } as any);
             
             if (!milestoneError) milestonesCreated++;
           }
@@ -288,7 +288,7 @@ Be EXTREMELY intelligent about:
           for (const task of analysis.tasks) {
             const taskData: any = {
               user_id: user.id,
-              project_id: project.id,
+              project_id: (project as any).id,
               title: typeof task === 'string' ? task : task.title,
               status: 'pending',
               priority: typeof task === 'object' ? (task.priority || 'medium') : 'medium'
@@ -313,7 +313,7 @@ Be EXTREMELY intelligent about:
             target_date: analysis.due_date,
             status: 'in-progress',
             priority: analysis.priority || 'medium'
-          });
+          } as any);
         }
 
         toast({

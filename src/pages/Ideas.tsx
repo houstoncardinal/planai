@@ -100,7 +100,7 @@ export default function Ideas() {
           category,
           status: 'concept',
           priority: 'medium'
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -135,7 +135,7 @@ export default function Ideas() {
 
       const { error } = await supabase
         .from('ideas')
-        .insert(newIdeas);
+        .insert(newIdeas as any);
 
       if (error) throw error;
 

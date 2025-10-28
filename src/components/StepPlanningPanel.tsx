@@ -87,23 +87,24 @@ export function StepPlanningPanel({ projectId, steps: initialSteps, onStepsChang
           impact: stepData.impact || [],
           project_id: projectId,
           user_id: user.id,
-        })
+        } as any)
         .select()
         .single();
 
       if (error) throw error;
 
       if (data) {
+        const anyData = data as any;
         const newStep: Step = {
-          id: data.id,
-          title: data.title,
-          description: data.description || '',
-          completed: data.completed,
-          notes: data.notes || '',
-          learnings: data.learnings || [],
-          impact: data.impact || [],
-          projectId: data.project_id,
-          createdAt: data.created_at,
+          id: anyData.id,
+          title: anyData.title,
+          description: anyData.description || '',
+          completed: anyData.completed,
+          notes: anyData.notes || '',
+          learnings: anyData.learnings || [],
+          impact: anyData.impact || [],
+          projectId: anyData.project_id,
+          createdAt: anyData.created_at,
           priority: stepData.priority || 'medium',
           status: 'not_started',
           estimatedHours: stepData.estimatedHours || 0,
@@ -124,15 +125,16 @@ export function StepPlanningPanel({ projectId, steps: initialSteps, onStepsChang
 
   const handleUpdateStep = async (stepId: string, updates: Partial<Step>) => {
     try {
-      const { error } = await supabase
-        .from('steps')
-        .update({
-          title: updates.title,
-          description: updates.description,
-          notes: updates.notes,
-          learnings: updates.learnings,
-          impact: updates.impact,
-        })
+      const updateData: any = {};
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.notes !== undefined) updateData.notes = updates.notes;
+      if (updates.learnings !== undefined) updateData.learnings = updates.learnings;
+      if (updates.impact !== undefined) updateData.impact = updates.impact;
+      
+      const { error } = await (supabase
+        .from('steps') as any)
+        .update(updateData)
         .eq('id', stepId);
 
       if (error) throw error;
@@ -162,8 +164,8 @@ export function StepPlanningPanel({ projectId, steps: initialSteps, onStepsChang
 
       const newCompletedState = !step.completed;
 
-      const { error } = await supabase
-        .from('steps')
+      const { error } = await (supabase
+        .from('steps') as any)
         .update({
           completed: newCompletedState,
           completed_at: newCompletedState ? new Date().toISOString() : null,

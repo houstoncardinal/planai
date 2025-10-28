@@ -122,7 +122,7 @@ const Learnings = () => {
         .insert([{
           user_id: user.id,
           ...learning
-        }]);
+        }] as any);
 
       if (error) throw error;
       

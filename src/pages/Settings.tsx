@@ -34,7 +34,7 @@ const Settings = () => {
         .single();
 
       setProfile({
-        displayName: data?.display_name || '',
+        displayName: (data as any)?.display_name || '',
         email: user.email || '',
       });
     } catch (error: any) {
@@ -48,8 +48,8 @@ const Settings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update({ display_name: profile.displayName })
         .eq('user_id', user.id);
 

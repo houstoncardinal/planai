@@ -246,8 +246,8 @@ export function AppSidebar() {
         .select('id')
         .eq('user_id', user.id);
 
-      const activeProjects = projects?.filter(p => p.status === 'active' || p.status === 'in-progress' || p.status === 'planning').length || 0;
-      const avgProgress = projects?.length ? Math.round(projects.reduce((sum, p) => sum + (p.progress || 0), 0) / projects.length) : 0;
+      const activeProjects = projects?.filter((p: any) => p.status === 'active' || p.status === 'in-progress' || p.status === 'planning').length || 0;
+      const avgProgress = projects?.length ? Math.round(projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / projects.length) : 0;
 
       setStats({
         activeProjects,

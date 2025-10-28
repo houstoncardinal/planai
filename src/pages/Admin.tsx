@@ -137,9 +137,9 @@ export default function Admin() {
         totalUsers: usersData?.length || 0,
         totalProjects: projectsData?.length || 0,
         totalTasks: tasksCount?.length || 0,
-        activeProjects: projectsData?.filter((p) => p.status !== "completed").length || 0,
-        completedProjects: projectsData?.filter((p) => p.status === "completed").length || 0,
-        adminUsers: usersData?.filter((u) => u.role === "admin").length || 0,
+        activeProjects: projectsData?.filter((p: any) => p.status !== "completed").length || 0,
+        completedProjects: projectsData?.filter((p: any) => p.status === "completed").length || 0,
+        adminUsers: usersData?.filter((u: any) => u.role === "admin").length || 0,
       });
     } catch (error: any) {
       console.error("Error loading admin data:", error);
@@ -151,7 +151,7 @@ export default function Admin() {
 
   const logAdminAction = async (action: string, targetType?: string, targetId?: string, details?: any) => {
     try {
-      await supabase.rpc("log_admin_action", {
+      await (supabase as any).rpc("log_admin_action", {
         p_action: action,
         p_target_type: targetType,
         p_target_id: targetId,
@@ -187,8 +187,8 @@ export default function Admin() {
     }
 
     try {
-      const { error } = await supabase
-        .from("profiles")
+      const { error } = await (supabase
+        .from("profiles") as any)
         .update({ role: newRole })
         .eq("id", userId);
 

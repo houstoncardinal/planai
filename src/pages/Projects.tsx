@@ -345,8 +345,8 @@ const Projects = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from('projects')
+      const { error} = await (supabase
+        .from('projects') as any)
         .update({
           title: updates.title,
           description: updates.description,
@@ -434,7 +434,7 @@ const Projects = () => {
           due_date: project.dueDate,
           budget: project.budget,
           estimated_completion: project.estimatedCompletion,
-        });
+        } as any);
 
       if (error) throw error;
 

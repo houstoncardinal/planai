@@ -68,20 +68,21 @@ const ProjectDetail = () => {
         return;
       }
 
+      const anyData = projectData as any;
       setProject({
-        id: projectData.id,
-        title: projectData.title,
-        description: projectData.description || '',
-        progress: projectData.progress || 0,
-        status: projectData.status || 'active',
-        dueDate: projectData.due_date || '',
-        category: projectData.category || '',
-        priority: projectData.priority || 'medium',
-        technologies: projectData.technologies || [],
-        team: projectData.team || [],
-        budget: projectData.budget || '',
-        timeSpent: projectData.time_spent || '',
-        estimatedCompletion: projectData.estimated_completion || '',
+        id: anyData.id,
+        title: anyData.title,
+        description: anyData.description || '',
+        progress: anyData.progress || 0,
+        status: anyData.status || 'active',
+        dueDate: anyData.due_date || '',
+        category: anyData.category || '',
+        priority: anyData.priority || 'medium',
+        technologies: anyData.technologies || [],
+        team: anyData.team || [],
+        budget: anyData.budget || '',
+        timeSpent: anyData.time_spent || '',
+        estimatedCompletion: anyData.estimated_completion || '',
         stepsCompleted: 0,
         totalSteps: 0,
       });

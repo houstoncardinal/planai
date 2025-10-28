@@ -36,7 +36,8 @@ export const useUserRole = (): UserRoleData => {
 
         if (profileError) throw profileError;
 
-        setRole(profile?.role as UserRole || 'customer');
+        const roleValue = (profile as any)?.role || 'customer';
+        setRole(roleValue as UserRole);
         setError(null);
       } catch (err) {
         console.error('Error fetching user role:', err);
@@ -80,7 +81,8 @@ export const checkAdminAccess = async (): Promise<boolean> => {
       .eq('id', user.id)
       .single();
 
-    return profile?.role === 'admin';
+    const roleValue = (profile as any)?.role || '';
+    return roleValue === 'admin';
   } catch (error) {
     console.error('Error checking admin access:', error);
     return false;
@@ -101,7 +103,7 @@ export const logAdminAction = async (
       return;
     }
 
-    await supabase.rpc('log_admin_action', {
+    await (supabase as any).rpc('log_admin_action', {
       p_action: action,
       p_target_type: targetType || null,
       p_target_id: targetId || null,
