@@ -44,10 +44,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => {
-  console.log('App component rendering');
-  
-  return (
+const App = () => (
   <ErrorBoundary>
     <ThemeProvider defaultTheme="system" storageKey="planai-ui-theme">
       <TutorialProvider>
@@ -111,6 +108,5 @@ const App = () => {
     </ThemeProvider>
   </ErrorBoundary>
 );
-};
 
 export default App;
