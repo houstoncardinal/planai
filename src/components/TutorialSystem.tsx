@@ -405,6 +405,14 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
     });
   }, [toast]);
 
+  const markTutorialComplete = useCallback((tutorialId: string) => {
+    setCompletedTutorials(prev => new Set([...prev, tutorialId]));
+    toast({
+      title: "Tutorial Completed! 🎉",
+      description: "You've successfully completed this tutorial.",
+    });
+  }, [toast]);
+
   const nextStep = useCallback(() => {
     if (currentTutorial) {
       const tutorial = featureGuides.find(t => t.id === currentTutorial);
@@ -415,7 +423,7 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
         endTutorial();
       }
     }
-  }, [currentTutorial, currentStep, endTutorial]);
+  }, [currentTutorial, currentStep, endTutorial, markTutorialComplete]);
 
   const previousStep = useCallback(() => {
     if (currentStep > 0) {
@@ -439,13 +447,6 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
     });
   }, [showTooltips, toast]);
 
-  const markTutorialComplete = useCallback((tutorialId: string) => {
-    setCompletedTutorials(prev => new Set([...prev, tutorialId]));
-    toast({
-      title: "Tutorial Completed! 🎉",
-      description: "You've successfully completed this tutorial.",
-    });
-  }, [toast]);
 
   const value: TutorialContextType = {
     isTutorialMode,
